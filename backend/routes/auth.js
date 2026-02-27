@@ -1,0 +1,93 @@
+import express from 'express';
+import jwt from 'jsonwebtoken';
+import { body, validationResult } from 'express-validator';
+import User from '../models/User.js';
+import { protect } from '../middleware/auth.js';
+import { logActivity } from '../middleware/activityLog.js';
+
+const router = express.Router();
+
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
+};
+
+// @route   POST /api/auth/register
+router.post(
+  '/register',
+  [
+    body('email').isEmail().normalizeEmail(),
+    body('password').isLength({ min: 6 }),
+    body('fullName').trim().notEmpty(),
+    body('role').isIn(['admin', 'teacher', 'reception', 'hod']),
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+      const { email, password, fullName, role, department } = req.body;
+      const exists = await User.findOne({ email });
+      if (exists) return res.status(400).json({ message: 'Email already registered' });
+      const user = await User.create({ email, password, fullName, role, department });
+      const token = generateToken(user._id);
+      res.status(201).json({
+        _id: user._id,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+        department: user.department,
+        token,
+      });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  }
+);
+
+// @route   POST /api/auth/login
+router.post(
+  '/login',
+  [body('email').isEmail().normalizeEmail(), body('password').notEmpty()],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) {
+        return res.status(400).json({ errors: errors.array() });
+      }
+      const { email, password } = req.body;
+      const user = await User.findOne({ email });
+      if (!user || !(await user.comparePassword(password))) {
+        return res.status(401).json({ message: 'Invalid email or password' });
+      }
+      if (!user.isActive) {
+        return res.status(401).json({ message: 'Account is deactivated' });
+      }
+      const token = generateToken(user._id);
+      await logActivity(user._id, 'login', 'auth', { email: user.email });
+      res.json({
+        _id: user._id,
+        email: user.email,
+        fullName: user.fullName,
+        role: user.role,
+        department: user.department,
+        token,
+      });
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  }
+);
+
+// @route   GET /api/auth/me
+router.get('/me', protect, (req, res) => {
+  res.json({
+    _id: req.user._id,
+    email: req.user.email,
+    fullName: req.user.fullName,
+    role: req.user.role,
+    department: req.user.department,
+  });
+});
+
+export default router;
