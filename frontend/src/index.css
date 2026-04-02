@@ -7,6 +7,11 @@
   --ucs-warning: #f59e0b;
 }
 
+/* Make the entire Tailwind UI feel like ~80% size (smaller text + spacing). */
+html {
+  font-size: 80%;
+}
+
 * {
   box-sizing: border-box;
 }
