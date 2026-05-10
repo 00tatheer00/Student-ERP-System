@@ -3,6 +3,7 @@ import QRCode from 'qrcode';
 import Attendance from '../models/Attendance.js';
 import Student from '../models/Student.js';
 import { protect, authorize } from '../middleware/auth.js';
+import { encodeAttendanceQr, decodeAttendanceQr } from '../utils/attendanceQr.js';
 
 const router = express.Router();
 router.use(protect);
@@ -12,12 +13,8 @@ router.get('/qr/:studentId', authorize('admin', 'teacher'), async (req, res) => 
   try {
     const student = await Student.findById(req.params.studentId);
     if (!student) return res.status(404).json({ message: 'Student not found' });
-    const payload = JSON.stringify({
-      studentId: student._id.toString(),
-      studentIdCode: student.studentId,
-      timestamp: Date.now(),
-    });
-    const qrDataUrl = await QRCode.toDataURL(payload);
+    const payload = encodeAttendanceQr(student._id.toString());
+    const qrDataUrl = await QRCode.toDataURL(payload, { margin: 1, width: 280 });
     res.json({ qrCode: qrDataUrl, studentId: student.studentId });
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -28,13 +25,26 @@ router.get('/qr/:studentId', authorize('admin', 'teacher'), async (req, res) => 
 router.post('/scan', authorize('admin', 'teacher'), async (req, res) => {
   try {
     const { studentId, courseCode, status = 'present', method = 'manual' } = req.body;
+    if (!courseCode || typeof courseCode !== 'string') {
+      return res.status(400).json({ message: 'Course is required' });
+    }
+    const resolvedStudentId =
+      typeof studentId === 'string' ? decodeAttendanceQr(studentId.trim()) : null;
+    if (!resolvedStudentId) {
+      return res.status(400).json({ message: 'Invalid student ID or QR scan — use card back or manual select.' });
+    }
+    const studentDoc = await Student.findById(resolvedStudentId);
+    if (!studentDoc) {
+      return res.status(404).json({ message: 'Student not found' });
+    }
+
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const tomorrow = new Date(today);
     tomorrow.setDate(tomorrow.getDate() + 1);
 
     const existing = await Attendance.findOne({
-      studentId,
+      studentId: resolvedStudentId,
       courseCode,
       date: { $gte: today, $lt: tomorrow },
     });
@@ -43,11 +53,11 @@ router.post('/scan', authorize('admin', 'teacher'), async (req, res) => {
     }
 
     const attendance = await Attendance.create({
-      studentId,
+      studentId: resolvedStudentId,
       courseCode,
       date: new Date(),
       status,
-      method,
+      method: method === 'qr' ? 'qr' : 'manual',
     });
     res.status(201).json(attendance);
   } catch (err) {

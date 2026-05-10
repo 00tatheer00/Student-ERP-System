@@ -5,7 +5,9 @@ import fs from 'fs';
 import { fileURLToPath } from 'url';
 import { parse } from 'csv-parse/sync';
 import PDFDocument from 'pdfkit';
+import QRCode from 'qrcode';
 import Student from '../models/Student.js';
+import { encodeAttendanceQr } from '../utils/attendanceQr.js';
 import { protect, authorize } from '../middleware/auth.js';
 import { logActivity } from '../middleware/activityLog.js';
 
@@ -100,23 +102,122 @@ router.post('/import', authorize('admin', 'reception'), upload.single('file'), a
   }
 });
 
-// GET /api/students/:id/id-card - Generate ID card PDF (must be before :id)
+// GET /api/students/:id/id-card — ISO CR80-style two-sided PDF (QR on back for attendance)
 router.get('/:id/id-card', authorize('admin', 'reception', 'hod'), async (req, res) => {
   try {
     const student = await Student.findById(req.params.id);
     if (!student) return res.status(404).json({ message: 'Student not found' });
+
+    const CARD_W = 153;
+    const CARD_H = 243;
+    const navy = '#0f2749';
+    const gold = '#c9a227';
+    const muted = '#64748b';
+
+    const qrPayload = encodeAttendanceQr(student._id.toString());
+    const qrBuffer = await QRCode.toBuffer(qrPayload, { type: 'png', margin: 1, width: 320, errorCorrectionLevel: 'M' });
+
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `inline; filename=id-card-${student.studentId}.pdf`);
-    const doc = new PDFDocument({ size: [240, 380], margin: 15 });
+
+    const doc = new PDFDocument({ size: [CARD_W, CARD_H], margin: 0 });
     doc.pipe(res);
-    doc.rect(0, 0, 240, 380).stroke();
-    doc.fontSize(10).text('University of Computer Sciences', 15, 20, { align: 'center', width: 210 });
-    doc.fontSize(8).text('Student ID Card', 15, 38, { align: 'center', width: 210 });
-    doc.moveDown(4);
-    doc.fontSize(14).text(student.studentId, 15, 80, { width: 210 });
-    doc.fontSize(12).text(student.fullName, 15, 105);
-    doc.fontSize(9).text(`Dept: ${student.department} | Sem: ${student.semester}`, 15, 130);
-    doc.text(`Program: ${student.program} | Batch: ${student.batch}`, 15, 145);
+
+    // ---- Front ----
+    doc.rect(0, 0, CARD_W, 44).fill(navy);
+    doc.fillColor('#ffffff').font('Helvetica-Bold').fontSize(9);
+    doc.text('University of Computer Sciences', 8, 11, { width: CARD_W - 16, align: 'center' });
+    doc.font('Helvetica').fontSize(6.2);
+    doc.text('Official Student Identification', 8, 26, { width: CARD_W - 16, align: 'center' });
+
+    doc.strokeColor(gold).lineWidth(1.5).moveTo(0, 44).lineTo(CARD_W, 44).stroke();
+
+    const photoX = 9;
+    const photoY = 51;
+    const photoW = 54;
+    const photoH = 66;
+    doc.rect(photoX, photoY, photoW, photoH).lineWidth(0.35).strokeColor('#cbd5e1').stroke();
+
+    if (student.profilePhoto) {
+      const rel = student.profilePhoto.replace(/^\//, '');
+      const photoPath = path.join(__dirname, '..', rel);
+      if (fs.existsSync(photoPath)) {
+        try {
+          doc.image(photoPath, photoX + 1.5, photoY + 1.5, {
+            fit: [photoW - 3, photoH - 3],
+            align: 'center',
+            valign: 'center',
+          });
+        } catch {
+          doc.fillColor(muted).fontSize(6).text('PHOTO', photoX, photoY + photoH / 2 - 3, {
+            width: photoW,
+            align: 'center',
+          });
+        }
+      }
+    } else {
+      doc.fillColor('#94a3b8').fontSize(6).text('PHOTO', photoX, photoY + photoH / 2 - 3, {
+        width: photoW,
+        align: 'center',
+      });
+    }
+
+    const tx = photoX + photoW + 7;
+    let ty = photoY + 2;
+    doc.fillColor('#0f172a').font('Helvetica-Bold').fontSize(7.5);
+    doc.text(student.fullName.toUpperCase(), tx, ty, { width: CARD_W - tx - 8 });
+    ty += 13;
+    doc.font('Helvetica-Bold').fontSize(8).fillColor(navy);
+    doc.text(student.studentId, tx, ty);
+    ty += 12;
+    doc.font('Helvetica').fontSize(6.5).fillColor('#334155');
+    doc.text(`${student.program}  ·  ${student.department}  ·  Semester ${student.semester}`, tx, ty, {
+      width: CARD_W - tx - 8,
+    });
+    ty += 11;
+    doc.text(`Batch ${student.batch}`, tx, ty);
+    ty += 11;
+    doc.fontSize(5.8).fillColor(muted);
+    doc.text(`Phone  ${student.phone}`, tx, ty, { width: CARD_W - tx - 8 });
+
+    doc.font('Helvetica').fontSize(5).fillColor('#94a3b8');
+    const issued = student.createdAt ? new Date(student.createdAt).toLocaleDateString() : new Date().toLocaleDateString();
+    doc.text(`Issued ${issued}`, 8, CARD_H - 24, { width: CARD_W - 16, align: 'center' });
+    doc.text('Non-transferable · Report lost cards to the Registrar', 8, CARD_H - 15, {
+      width: CARD_W - 16,
+      align: 'center',
+    });
+
+    // ---- Back (attendance QR) ----
+    doc.addPage({ size: [CARD_W, CARD_H], margin: 0 });
+    doc.rect(0, 0, CARD_W, CARD_H).fill('#f8fafc');
+
+    doc.lineWidth(0.5).fillColor('#ffffff').strokeColor('#e2e8f0');
+    doc.rect(8, 12, CARD_W - 16, CARD_H - 24).fillAndStroke();
+
+    doc.fillColor(navy).font('Helvetica-Bold').fontSize(9);
+    doc.text('ATTENDANCE', 12, 22, { width: CARD_W - 24, align: 'center' });
+    doc.font('Helvetica').fontSize(5.8).fillColor('#475569');
+    doc.text(
+      'Present this side to the reader. USB or Bluetooth scanners paste into the ERP attendance field like a keyboard.',
+      14,
+      36,
+      { width: CARD_W - 28, align: 'center' }
+    );
+
+    const qrSize = 82;
+    const qrx = (CARD_W - qrSize) / 2;
+    const qry = 58;
+    doc.image(qrBuffer, qrx, qry, { width: qrSize, height: qrSize });
+
+    doc.fillColor('#0f172a').font('Helvetica-Bold').fontSize(7);
+    doc.text(student.studentId, 10, qry + qrSize + 7, { width: CARD_W - 20, align: 'center' });
+    doc.font('Helvetica').fontSize(5.5).fillColor(muted);
+    doc.text(`${student.fullName}`, 10, qry + qrSize + 17, { width: CARD_W - 20, align: 'center' });
+
+    doc.fontSize(5).fillColor('#94a3b8');
+    doc.text('University ERP · enrollment verified', 10, CARD_H - 26, { width: CARD_W - 20, align: 'center' });
+
     doc.end();
   } catch (err) {
     res.status(500).json({ message: err.message });

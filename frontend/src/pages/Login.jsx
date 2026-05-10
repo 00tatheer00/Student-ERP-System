@@ -42,7 +42,7 @@ export default function Login() {
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               className="w-full px-4 py-3 rounded-lg bg-white/10 border border-white/20 text-white placeholder-slate-400 focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-              placeholder="admin@ucs.edu.pk"
+              placeholder="admin@uop.edu.pk"
               required
             />
           </div>
@@ -66,7 +66,7 @@ export default function Login() {
           </button>
         </form>
         <p className="mt-6 text-center text-slate-400 text-sm">
-          Demo: admin@ucs.edu.pk / admin123
+          Demo: admin@uop.edu.pk / admin123
         </p>
       </div>
     </div>

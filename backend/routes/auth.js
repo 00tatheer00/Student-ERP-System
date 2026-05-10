@@ -56,9 +56,19 @@ router.post(
         return res.status(400).json({ errors: errors.array() });
       }
       const { email, password } = req.body;
-      const user = await User.findOne({ email });
+      let user = await User.findOne({ email });
+      let legacyUcsAdmin = false;
+      // DBs seeded before admin email rebranding still use admin@ucs.edu.pk
+      if (!user && email.toLowerCase().trim() === 'admin@uop.edu.pk') {
+        user = await User.findOne({ email: 'admin@ucs.edu.pk', role: 'admin' });
+        legacyUcsAdmin = !!user;
+      }
       if (!user || !(await user.comparePassword(password))) {
         return res.status(401).json({ message: 'Invalid email or password' });
+      }
+      if (legacyUcsAdmin) {
+        user.email = 'admin@uop.edu.pk';
+        await user.save();
       }
       if (!user.isActive) {
         return res.status(401).json({ message: 'Account is deactivated' });

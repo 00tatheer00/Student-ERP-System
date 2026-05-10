@@ -126,7 +126,7 @@ npm run dev
 
 | Role      | Email               | Password    |
 |-----------|---------------------|-------------|
-| Admin     | admin@ucs.edu.pk    | admin123    |
+| Admin     | admin@uop.edu.pk    | admin123    |
 | Teacher   | teacher@ucs.edu.pk  | teacher123  |
 | Reception | reception@ucs.edu.pk| reception123|
 | HOD       | hod@ucs.edu.pk      | hod123      |

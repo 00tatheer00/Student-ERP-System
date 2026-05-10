@@ -332,15 +332,20 @@ const seed = async () => {
   }
   console.log(`Fines seeded: ${fineToCreate.length}`);
 
-  const adminExists = await User.findOne({ email: 'admin@ucs.edu.pk' });
-  if (!adminExists) {
+  const adminEmails = ['admin@uop.edu.pk', 'admin@ucs.edu.pk'];
+  let adminUser = await User.findOne({ email: { $in: adminEmails } });
+  if (!adminUser) {
     await User.create({
-      email: 'admin@ucs.edu.pk',
+      email: 'admin@uop.edu.pk',
       password: 'admin123',
       fullName: 'System Admin',
       role: 'admin',
     });
-    console.log('Admin user created: admin@ucs.edu.pk / admin123');
+    console.log('Admin user created: admin@uop.edu.pk / admin123');
+  } else if (adminUser.email === 'admin@ucs.edu.pk') {
+    adminUser.email = 'admin@uop.edu.pk';
+    await adminUser.save();
+    console.log('Admin email updated to admin@uop.edu.pk / admin123');
   }
 
   const teacherExists = await User.findOne({ email: 'teacher@ucs.edu.pk' });
