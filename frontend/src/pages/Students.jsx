@@ -108,8 +108,27 @@ export default function Students() {
     window.URL.revokeObjectURL(url);
   };
 
-  const openIdCard = (id) => {
-    window.open(`/api/students/${id}/id-card`, '_blank');
+  const openIdCard = async (id) => {
+    try {
+      const res = await api.get(`/students/${id}/id-card`, { responseType: 'blob' });
+      const blob = new Blob([res.data], { type: 'application/pdf' });
+      const url = window.URL.createObjectURL(blob);
+      window.open(url, '_blank', 'noopener,noreferrer');
+      setTimeout(() => window.URL.revokeObjectURL(url), 120000);
+    } catch (err) {
+      let msg = 'Could not load ID card';
+      const data = err.response?.data;
+      if (data instanceof Blob) {
+        try {
+          const text = await data.text();
+          const j = JSON.parse(text);
+          if (j.message) msg = j.message;
+        } catch {
+          /* ignore */
+        }
+      } else if (data?.message) msg = data.message;
+      alert(msg);
+    }
   };
 
   return (

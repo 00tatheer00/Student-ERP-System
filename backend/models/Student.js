@@ -72,6 +72,18 @@ const studentSchema = new mongoose.Schema(
       enum: ['active', 'inactive'],
       default: 'active',
     },
+    deletedAt: {
+      type: Date,
+      default: null,
+    },
+    consentProcessing: {
+      type: Boolean,
+      default: true,
+    },
+    consentMarketing: {
+      type: Boolean,
+      default: false,
+    },
   },
   { timestamps: true }
 );

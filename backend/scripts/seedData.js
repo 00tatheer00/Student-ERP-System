@@ -8,6 +8,15 @@ import Fee from '../models/Fee.js';
 import Fine from '../models/Fine.js';
 import Course from '../models/Course.js';
 import Department from '../models/Department.js';
+import AcademicTerm from '../models/AcademicTerm.js';
+import Enrollment from '../models/Enrollment.js';
+import CoursePrerequisite from '../models/CoursePrerequisite.js';
+import DegreeRequirement from '../models/DegreeRequirement.js';
+import ExamHall from '../models/ExamHall.js';
+import ExamSession from '../models/ExamSession.js';
+import ExamSeatAssignment from '../models/ExamSeatAssignment.js';
+import MalpracticeLog from '../models/MalpracticeLog.js';
+import ServiceLedger from '../models/ServiceLedger.js';
 
 dotenv.config();
 
@@ -127,13 +136,25 @@ const seed = async () => {
   const shouldClearModules = process.env.CLEAR_MODULES === 'true' || existingStudentsTotal === 0;
 
   if (shouldClearModules) {
+    await User.deleteMany({
+      email: { $in: ['student.portal@ucs.edu.pk', 'parent.portal@ucs.edu.pk'] },
+    });
     // Clear module data (we keep User accounts like admin/teacher/reception/hod).
+    await Enrollment.deleteMany({});
+    await AcademicTerm.deleteMany({});
+    await CoursePrerequisite.deleteMany({});
+    await DegreeRequirement.deleteMany({});
+    await ExamSeatAssignment.deleteMany({});
+    await ExamSession.deleteMany({});
+    await ExamHall.deleteMany({});
+    await MalpracticeLog.deleteMany({});
+    await ServiceLedger.deleteMany({});
     await Student.deleteMany({});
     await Attendance.deleteMany({});
     await Result.deleteMany({});
     await Fee.deleteMany({});
     await Fine.deleteMany({});
-    console.log('Cleared student/attendance/results/fees/fines collections');
+    console.log('Cleared student/attendance/results/fees/fines + extended academic collections');
   } else {
     console.log('Appending additional dummy students + related module data');
   }
@@ -381,6 +402,77 @@ const seed = async () => {
       department: 'CS',
     });
     console.log('HOD user created: hod@ucs.edu.pk / hod123');
+  }
+
+  // ---- Academic term, prerequisites, degree plan, exam hall, portal demo users ----
+  const demoStudent = createdStudents.find((s) => s.department === 'CS') || createdStudents[0];
+  if (demoStudent) {
+    let term = await AcademicTerm.findOne({ isActive: true });
+    if (!term) {
+      const enrollmentOpenAt = new Date();
+      enrollmentOpenAt.setDate(enrollmentOpenAt.getDate() - 14);
+      const enrollmentCloseAt = new Date();
+      enrollmentCloseAt.setDate(enrollmentCloseAt.getDate() + 120);
+      const addDropDeadline = new Date();
+      addDropDeadline.setDate(addDropDeadline.getDate() + 90);
+      term = await AcademicTerm.create({
+        label: 'Open Term (demo)',
+        semester: 1,
+        year: 2026,
+        enrollmentOpenAt,
+        enrollmentCloseAt,
+        addDropDeadline,
+        isActive: true,
+      });
+      console.log('Academic term created (enrollment window open for demo)');
+    }
+
+    await CoursePrerequisite.updateOne(
+      { courseCode: 'CS201', prerequisiteCourseCode: 'CS101' },
+      { $setOnInsert: { courseCode: 'CS201', prerequisiteCourseCode: 'CS101' } },
+      { upsert: true }
+    );
+
+    await DegreeRequirement.updateOne(
+      { program: 'BS', department: 'CS' },
+      {
+        $set: {
+          title: 'CS BS core (demo)',
+          requiredCourseCodes: ['CS101', 'CS102', 'CS201'],
+        },
+      },
+      { upsert: true }
+    );
+
+    await ExamHall.updateOne(
+      { code: 'HALL-A' },
+      { $setOnInsert: { code: 'HALL-A', name: 'Main Auditorium', capacity: 200 } },
+      { upsert: true }
+    );
+
+    const studentPortalEmail = 'student.portal@ucs.edu.pk';
+    if (!(await User.findOne({ email: studentPortalEmail }))) {
+      await User.create({
+        email: studentPortalEmail,
+        password: 'portal123',
+        fullName: `Portal: ${demoStudent.fullName}`,
+        role: 'student',
+        linkedStudentId: demoStudent._id,
+      });
+      console.log(`Portal student: ${studentPortalEmail} / portal123 → ${demoStudent.studentId}`);
+    }
+
+    const parentPortalEmail = 'parent.portal@ucs.edu.pk';
+    if (!(await User.findOne({ email: parentPortalEmail }))) {
+      await User.create({
+        email: parentPortalEmail,
+        password: 'portal123',
+        fullName: 'Demo Parent',
+        role: 'parent',
+        parentOfStudentIds: [demoStudent._id],
+      });
+      console.log(`Portal parent: ${parentPortalEmail} / portal123`);
+    }
   }
 
   console.log('Seed completed');

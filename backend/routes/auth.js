@@ -2,10 +2,21 @@ import express from 'express';
 import jwt from 'jsonwebtoken';
 import { body, validationResult } from 'express-validator';
 import User from '../models/User.js';
-import { protect } from '../middleware/auth.js';
+import { protect, authorize } from '../middleware/auth.js';
 import { logActivity } from '../middleware/activityLog.js';
 
 const router = express.Router();
+
+const userPayload = (user, extras = {}) => ({
+  _id: user._id,
+  email: user.email,
+  fullName: user.fullName,
+  role: user.role,
+  department: user.department,
+  linkedStudentId: user.linkedStudentId || null,
+  parentOfStudentIds: user.parentOfStudentIds || [],
+  ...extras,
+});
 
 const generateToken = (id) => {
   return jwt.sign({ id }, process.env.JWT_SECRET || 'secret', { expiresIn: '7d' });
@@ -31,14 +42,11 @@ router.post(
       if (exists) return res.status(400).json({ message: 'Email already registered' });
       const user = await User.create({ email, password, fullName, role, department });
       const token = generateToken(user._id);
-      res.status(201).json({
-        _id: user._id,
-        email: user.email,
-        fullName: user.fullName,
-        role: user.role,
-        department: user.department,
-        token,
-      });
+      res.status(201).json(
+        userPayload(user, {
+          token,
+        })
+      );
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
@@ -75,14 +83,7 @@ router.post(
       }
       const token = generateToken(user._id);
       await logActivity(user._id, 'login', 'auth', { email: user.email });
-      res.json({
-        _id: user._id,
-        email: user.email,
-        fullName: user.fullName,
-        role: user.role,
-        department: user.department,
-        token,
-      });
+      res.json(userPayload(user, { token }));
     } catch (err) {
       res.status(500).json({ message: err.message });
     }
@@ -91,13 +92,39 @@ router.post(
 
 // @route   GET /api/auth/me
 router.get('/me', protect, (req, res) => {
-  res.json({
-    _id: req.user._id,
-    email: req.user.email,
-    fullName: req.user.fullName,
-    role: req.user.role,
-    department: req.user.department,
-  });
+  res.json(userPayload(req.user));
 });
+
+router.post(
+  '/create-portal-user',
+  protect,
+  authorize('admin'),
+  [
+    body('email').isEmail().normalizeEmail(),
+    body('password').isLength({ min: 6 }),
+    body('fullName').trim().notEmpty(),
+    body('role').isIn(['student', 'parent']),
+  ],
+  async (req, res) => {
+    try {
+      const errors = validationResult(req);
+      if (!errors.isEmpty()) return res.status(400).json({ errors: errors.array() });
+
+      const { email, password, fullName, role, linkedStudentId, parentOfStudentIds } = req.body;
+      const exists = await User.findOne({ email });
+      if (exists) return res.status(400).json({ message: 'Email already registered' });
+
+      const payload = { email, password, fullName, role };
+      if (role === 'student' && linkedStudentId) payload.linkedStudentId = linkedStudentId;
+      if (role === 'parent' && Array.isArray(parentOfStudentIds)) payload.parentOfStudentIds = parentOfStudentIds;
+
+      const user = await User.create(payload);
+      await logActivity(req.user._id, 'create_portal_user', 'auth', { target: user.email, role });
+      res.status(201).json(userPayload(user));
+    } catch (err) {
+      res.status(500).json({ message: err.message });
+    }
+  }
+);
 
 export default router;

@@ -16,6 +16,16 @@ import fineRoutes from './routes/fines.js';
 import departmentRoutes from './routes/departments.js';
 import dashboardRoutes from './routes/dashboard.js';
 import activityLogRoutes from './routes/activityLogs.js';
+import academicTermRoutes from './routes/academicTerms.js';
+import enrollmentRoutes from './routes/enrollments.js';
+import prerequisiteRoutes from './routes/prerequisites.js';
+import degreeRequirementRoutes from './routes/degreeRequirements.js';
+import examRoutes from './routes/exams.js';
+import serviceLedgerRoutes from './routes/serviceLedgers.js';
+import portalRoutes from './routes/portal.js';
+import complianceRoutes from './routes/compliance.js';
+import notificationRoutes from './routes/notifications.js';
+import { requestLogger } from './middleware/requestLogger.js';
 
 dotenv.config();
 
@@ -27,14 +37,23 @@ if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+const startedAt = Date.now();
 
-// Middleware
+if (process.env.SENTRY_DSN) {
+  import('@sentry/node')
+    .then((Sentry) => {
+      Sentry.init({ dsn: process.env.SENTRY_DSN, tracesSampleRate: 0.1 });
+      console.log('✓ Sentry initialized');
+    })
+    .catch(() => console.warn('Sentry package not installed — npm i @sentry/node to enable'));
+}
+
 app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(requestLogger);
 app.use('/uploads', express.static(path.join(__dirname, 'uploads')));
 
-// API Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/students', studentRoutes);
 app.use('/api/courses', courseRoutes);
@@ -45,13 +64,28 @@ app.use('/api/fines', fineRoutes);
 app.use('/api/departments', departmentRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/activity-logs', activityLogRoutes);
+app.use('/api/academic-terms', academicTermRoutes);
+app.use('/api/enrollments', enrollmentRoutes);
+app.use('/api/prerequisites', prerequisiteRoutes);
+app.use('/api/degree-requirements', degreeRequirementRoutes);
+app.use('/api/exams', examRoutes);
+app.use('/api/service-ledgers', serviceLedgerRoutes);
+app.use('/api/portal', portalRoutes);
+app.use('/api/compliance', complianceRoutes);
+app.use('/api/notifications', notificationRoutes);
 
-// Health check endpoint
 app.get('/api/health', (req, res) => {
-  res.json({ status: 'ok', message: 'UCS ERP API is running' });
+  const dbState = mongoose.connection.readyState;
+  const dbLabels = { 0: 'disconnected', 1: 'connected', 2: 'connecting', 3: 'disconnecting' };
+  res.json({
+    status: dbState === 1 ? 'ok' : 'degraded',
+    uptimeSeconds: Math.floor((Date.now() - startedAt) / 1000),
+    mongo: dbLabels[dbState] || String(dbState),
+    env: process.env.NODE_ENV || 'development',
+    version: process.env.npm_package_version || '1.0.0',
+  });
 });
 
-// MongoDB Connection
 mongoose
   .connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/ucs-erp')
   .then(() => {

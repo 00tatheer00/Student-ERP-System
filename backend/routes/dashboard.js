@@ -1,5 +1,6 @@
 import express from 'express';
 import Student from '../models/Student.js';
+import { activeStudentMatch } from '../utils/studentQuery.js';
 import Attendance from '../models/Attendance.js';
 import Result from '../models/Result.js';
 import Fee from '../models/Fee.js';
@@ -12,7 +13,7 @@ router.use(authorize('admin', 'hod'));
 
 router.get('/', async (req, res) => {
   try {
-    const students = await Student.find({ status: 'active' });
+    const students = await Student.find(activeStudentMatch({ status: 'active' }));
     const fees = await Fee.find();
     const fines = await Fine.find();
     const attendance = await Attendance.find();

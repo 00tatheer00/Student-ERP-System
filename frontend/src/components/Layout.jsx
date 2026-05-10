@@ -4,6 +4,8 @@ import { useAuth } from '../context/AuthContext';
 
 const navItems = [
   { path: '/', label: 'Dashboard', icon: '📊', roles: ['admin', 'hod'] },
+  { path: '/portal/student', label: 'My portal', icon: '🎓', roles: ['student'] },
+  { path: '/portal/parent', label: 'Parent portal', icon: '👪', roles: ['parent'] },
   { path: '/students', label: 'Students', icon: '👥', roles: ['admin', 'reception', 'hod'] },
   { path: '/courses', label: 'Courses', icon: '📚', roles: ['admin', 'teacher', 'reception', 'hod'] },
   { path: '/attendance', label: 'Attendance', icon: '✓', roles: ['admin', 'teacher', 'hod'] },
@@ -11,7 +13,8 @@ const navItems = [
   { path: '/fees', label: 'Fees', icon: '💰', roles: ['admin', 'reception', 'hod'] },
   { path: '/fines', label: 'Fines', icon: '⚠️', roles: ['admin', 'reception', 'hod'] },
   { path: '/departments', label: 'Departments', icon: '🏛️', roles: ['admin', 'teacher', 'reception', 'hod'] },
-  { path: '/reports', label: 'Reports', icon: '📈', roles: ['admin', 'hod'] },
+  { path: '/reports', label: 'Reports', icon: '📈', roles: ['admin', 'hod', 'reception', 'teacher'] },
+  { path: '/enrollments', label: 'Enrollment', icon: '📋', roles: ['admin', 'reception'] },
 ];
 
 export default function Layout({ children }) {

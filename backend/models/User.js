@@ -22,9 +22,19 @@ const userSchema = new mongoose.Schema(
     },
     role: {
       type: String,
-      enum: ['admin', 'teacher', 'reception', 'hod'],
+      enum: ['admin', 'teacher', 'reception', 'hod', 'student', 'parent'],
       default: 'reception',
     },
+    linkedStudentId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'Student',
+    },
+    parentOfStudentIds: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'Student',
+      },
+    ],
     department: {
       type: String,
       enum: ['CS', 'SE', 'AI', 'CY', 'DS', 'IT'],

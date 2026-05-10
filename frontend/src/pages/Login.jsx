@@ -15,8 +15,10 @@ export default function Login() {
     setError('');
     setLoading(true);
     try {
-      await login(email, password);
-      navigate('/');
+      const userData = await login(email, password);
+      if (userData.role === 'student') navigate('/portal/student');
+      else if (userData.role === 'parent') navigate('/portal/parent');
+      else navigate('/');
     } catch (err) {
       setError(err.response?.data?.message || 'Login failed');
     } finally {

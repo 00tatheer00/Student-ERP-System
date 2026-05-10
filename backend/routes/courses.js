@@ -5,7 +5,7 @@ import { protect, authorize } from '../middleware/auth.js';
 const router = express.Router();
 router.use(protect);
 
-router.get('/', authorize('admin', 'teacher', 'reception', 'hod'), async (req, res) => {
+router.get('/', authorize('admin', 'teacher', 'reception', 'hod', 'student'), async (req, res) => {
   try {
     const { department, semester } = req.query;
     const filter = {};

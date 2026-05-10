@@ -11,6 +11,9 @@ import Fees from './pages/Fees';
 import Fines from './pages/Fines';
 import Departments from './pages/Departments';
 import Reports from './pages/Reports';
+import PortalStudent from './pages/PortalStudent';
+import PortalParent from './pages/PortalParent';
+import Enrollments from './pages/Enrollments';
 
 function PrivateRoute({ children }) {
   const { user } = useAuth();
@@ -37,6 +40,9 @@ function App() {
                   <Route path="/fines" element={<Fines />} />
                   <Route path="/departments" element={<Departments />} />
                   <Route path="/reports" element={<Reports />} />
+                  <Route path="/portal/student" element={<PortalStudent />} />
+                  <Route path="/portal/parent" element={<PortalParent />} />
+                  <Route path="/enrollments" element={<Enrollments />} />
                 </Routes>
               </Layout>
             </PrivateRoute>

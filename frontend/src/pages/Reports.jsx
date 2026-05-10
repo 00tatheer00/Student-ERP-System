@@ -7,6 +7,8 @@ export default function Reports() {
   const [dashboard, setDashboard] = useState(null);
   const [activityLogs, setActivityLogs] = useState([]);
 
+  const [compliancePreview, setCompliancePreview] = useState(null);
+
   useEffect(() => {
     if (['admin', 'hod'].includes(user?.role)) {
       api.get('/dashboard').then((res) => setDashboard(res.data)).catch(() => setDashboard(null));
@@ -16,7 +18,10 @@ export default function Reports() {
     }
   }, [user]);
 
-  const canViewReports = ['admin', 'hod'].includes(user?.role);
+  const canViewReports = ['admin', 'hod', 'reception', 'teacher'].includes(user?.role);
+  const canAttendanceInsight = ['admin', 'hod', 'teacher'].includes(user?.role);
+  const canFeeInsights = ['admin', 'hod', 'reception'].includes(user?.role);
+  const canHecExport = ['admin', 'hod'].includes(user?.role);
 
   if (!canViewReports) {
     return (
@@ -26,9 +31,98 @@ export default function Reports() {
     );
   }
 
+  const downloadBlob = (blob, filename) => {
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = filename;
+    a.click();
+    URL.revokeObjectURL(url);
+  };
+
+  const fetchAttendancePreview = () => {
+    api
+      .get('/compliance/insights/attendance-sheet')
+      .then((res) => setCompliancePreview({ title: 'Attendance sheet (sample)', body: res.data }))
+      .catch(() => setCompliancePreview({ title: 'Error', body: { message: 'Failed to load' } }));
+  };
+
+  const fetchFeeCollection = () => {
+    api
+      .get('/compliance/insights/fee-collection')
+      .then((res) => setCompliancePreview({ title: 'Fee collection summary', body: res.data }))
+      .catch(() => setCompliancePreview({ title: 'Error', body: { message: 'Failed to load' } }));
+  };
+
+  const fetchDefaulters = () => {
+    api
+      .get('/compliance/insights/fee-defaulters')
+      .then((res) => setCompliancePreview({ title: 'Fee defaulters', body: res.data }))
+      .catch(() => setCompliancePreview({ title: 'Error', body: { message: 'Failed to load' } }));
+  };
+
+  const downloadHec = async () => {
+    try {
+      const res = await api.get('/compliance/insights/hec-students-export', { responseType: 'blob' });
+      downloadBlob(res.data, 'hec-style-students.csv');
+    } catch {
+      alert('Could not download HEC-style export.');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-bold text-slate-800">Reports & Analytics</h1>
+
+      <div className="bg-white rounded-xl shadow p-6">
+        <h2 className="text-lg font-semibold mb-4">Compliance & exports</h2>
+        <p className="text-sm text-slate-600 mb-4">
+          Term-wise attendance JSON, fee summaries, defaulters, and HEC-style student CSV (role-restricted on the API).
+        </p>
+        <div className="flex flex-wrap gap-2 mb-4">
+          {canAttendanceInsight && (
+            <button
+              type="button"
+              onClick={fetchAttendancePreview}
+              className="px-4 py-2 bg-slate-800 text-white rounded-lg text-sm hover:bg-slate-900"
+            >
+              Attendance sheet (JSON preview)
+            </button>
+          )}
+          {canFeeInsights && (
+            <>
+              <button
+                type="button"
+                onClick={fetchFeeCollection}
+                className="px-4 py-2 bg-emerald-700 text-white rounded-lg text-sm hover:bg-emerald-800"
+              >
+                Fee collection summary
+              </button>
+              <button
+                type="button"
+                onClick={fetchDefaulters}
+                className="px-4 py-2 bg-amber-700 text-white rounded-lg text-sm hover:bg-amber-800"
+              >
+                Defaulters list
+              </button>
+            </>
+          )}
+          {canHecExport && (
+            <button
+              type="button"
+              onClick={downloadHec}
+              className="px-4 py-2 bg-blue-700 text-white rounded-lg text-sm hover:bg-blue-800"
+            >
+              Download HEC-style CSV
+            </button>
+          )}
+        </div>
+        {compliancePreview && (
+          <pre className="text-xs bg-slate-50 border rounded-lg p-4 max-h-72 overflow-auto overflow-x-auto">
+            {JSON.stringify(compliancePreview.body, null, 2)}
+          </pre>
+        )}
+      </div>
 
       {dashboard && (
         <div className="bg-white rounded-xl shadow p-6">
