@@ -54,143 +54,136 @@ export default function Fines() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-slate-800">Fine System</h1>
-        <button
-          onClick={() => setShowModal(true)}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium"
-        >
-          Add Fine
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="erp-h1">Disciplinary fines</h1>
+          <p className="erp-muted mt-1">Issue fines and mark settlements.</p>
+        </div>
+        <button type="button" onClick={() => setShowModal(true)} className="erp-btn-accent">
+          Add fine
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow p-4">
+      <div className="erp-toolbar">
         <select
           value={filter.status}
           onChange={(e) => setFilter({ ...filter, status: e.target.value })}
-          className="px-3 py-2 border rounded-lg"
+          className="erp-select w-auto min-w-[160px]"
         >
-          <option value="">All Status</option>
+          <option value="">All status</option>
           <option value="pending">Pending</option>
           <option value="paid">Paid</option>
         </select>
       </div>
 
-      <div className="bg-white rounded-xl shadow overflow-hidden">
+      <div className="erp-table-shell">
         {loading ? (
-          <div className="p-8 text-center text-slate-500">Loading...</div>
+          <div className="erp-empty">Loading…</div>
         ) : (
-          <table className="w-full">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="text-left p-4">Student</th>
-                <th className="text-left p-4">Type</th>
-                <th className="text-left p-4">Amount</th>
-                <th className="text-left p-4">Description</th>
-                <th className="text-left p-4">Status</th>
-                <th className="text-left p-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {fines.map((f) => (
-                <tr key={f._id} className="border-t hover:bg-slate-50">
-                  <td className="p-4">
-                    {f.studentId?.studentId || f.studentId} - {f.studentId?.fullName || '-'}
-                  </td>
-                  <td className="p-4">
-                    {FINE_TYPES.find((t) => t.value === f.type)?.label || f.type}
-                  </td>
-                  <td className="p-4">Rs. {f.amount?.toLocaleString()}</td>
-                  <td className="p-4">{f.description || '-'}</td>
-                  <td className="p-4">
-                    <span
-                      className={`px-2 py-1 rounded text-xs ${
-                        f.status === 'paid' ? 'bg-green-100 text-green-800' : 'bg-amber-100 text-amber-800'
-                      }`}
-                    >
-                      {f.status}
-                    </span>
-                  </td>
-                  <td className="p-4">
-                    {f.status === 'pending' && (
-                      <button
-                        onClick={() => handlePay(f._id)}
-                        className="text-green-600 hover:underline text-sm"
-                      >
-                        Mark Paid
-                      </button>
-                    )}
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="erp-table">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Type</th>
+                  <th>Amount</th>
+                  <th>Description</th>
+                  <th>Status</th>
+                  <th className="text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {fines.map((f) => (
+                  <tr key={f._id}>
+                    <td className="font-medium">
+                      {f.studentId?.studentId || f.studentId} — {f.studentId?.fullName || '-'}
+                    </td>
+                    <td>{FINE_TYPES.find((t) => t.value === f.type)?.label || f.type}</td>
+                    <td className="tabular-nums">Rs. {f.amount?.toLocaleString()}</td>
+                    <td className="max-w-[200px] truncate text-zinc-600">{f.description || '—'}</td>
+                    <td>
+                      <span className={f.status === 'paid' ? 'erp-badge-ok' : 'erp-badge-warn'}>{f.status}</span>
+                    </td>
+                    <td className="text-right">
+                      {f.status === 'pending' && (
+                        <button type="button" onClick={() => handlePay(f._id)} className="erp-link">
+                          Mark paid
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-            <h2 className="text-xl font-bold mb-4">Add Fine</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Student</label>
-                <select
-                  value={form.studentId}
-                  onChange={(e) => setForm({ ...form, studentId: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg"
-                  required
-                >
-                  <option value="">Select Student</option>
-                  {students.map((s) => (
-                    <option key={s._id} value={s._id}>
-                      {s.studentId} - {s.fullName}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Type</label>
-                <select
-                  value={form.type}
-                  onChange={(e) => setForm({ ...form, type: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg"
-                >
-                  {FINE_TYPES.map((t) => (
-                    <option key={t.value} value={t.value}>
-                      {t.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Amount (Rs)</label>
-                <input
-                  type="number"
-                  value={form.amount}
-                  onChange={(e) => setForm({ ...form, amount: parseInt(e.target.value) })}
-                  className="w-full px-3 py-2 border rounded-lg"
-                  required
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Description</label>
-                <input
-                  type="text"
-                  value={form.description}
-                  onChange={(e) => setForm({ ...form, description: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
-              </div>
-              <div className="flex justify-end gap-2 pt-4">
-                <button type="button" onClick={() => setShowModal(false)} className="px-4 py-2 bg-slate-200 rounded-lg">
-                  Cancel
-                </button>
-                <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg">
-                  Add
-                </button>
-              </div>
-            </form>
+        <div className="erp-modal-backdrop">
+          <div className="erp-modal erp-modal-sm">
+            <div className="p-6 sm:p-8">
+              <h2 className="erp-h1 mb-6">Add fine</h2>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                <div>
+                  <label className="erp-label">Student</label>
+                  <select
+                    value={form.studentId}
+                    onChange={(e) => setForm({ ...form, studentId: e.target.value })}
+                    className="erp-select mt-1"
+                    required
+                  >
+                    <option value="">Select student</option>
+                    {students.map((s) => (
+                      <option key={s._id} value={s._id}>
+                        {s.studentId} — {s.fullName}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="erp-label">Type</label>
+                  <select
+                    value={form.type}
+                    onChange={(e) => setForm({ ...form, type: e.target.value })}
+                    className="erp-select mt-1"
+                  >
+                    {FINE_TYPES.map((t) => (
+                      <option key={t.value} value={t.value}>
+                        {t.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+                <div>
+                  <label className="erp-label">Amount (Rs)</label>
+                  <input
+                    type="number"
+                    value={form.amount}
+                    onChange={(e) => setForm({ ...form, amount: parseInt(e.target.value) })}
+                    className="erp-input mt-1"
+                    required
+                  />
+                </div>
+                <div>
+                  <label className="erp-label">Description</label>
+                  <input
+                    type="text"
+                    value={form.description}
+                    onChange={(e) => setForm({ ...form, description: e.target.value })}
+                    className="erp-input mt-1"
+                  />
+                </div>
+                <div className="flex justify-end gap-2 border-t border-zinc-100 pt-6">
+                  <button type="button" onClick={() => setShowModal(false)} className="erp-btn-secondary">
+                    Cancel
+                  </button>
+                  <button type="submit" className="erp-btn-accent">
+                    Add
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

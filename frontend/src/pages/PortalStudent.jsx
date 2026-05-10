@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { GraduationCap, Shield } from 'lucide-react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -83,103 +84,123 @@ export default function PortalStudent() {
 
   if (user?.role !== 'student') {
     return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-slate-500">Student portal is only available for student accounts.</p>
+      <div className="erp-card-pad flex min-h-[240px] items-center justify-center">
+        <p className="erp-muted text-center">Student portal is only available for student accounts.</p>
       </div>
     );
   }
 
   if (!sid) {
     return (
-      <div className="rounded-xl bg-amber-50 border border-amber-200 p-6 text-amber-900">
+      <div className="rounded-2xl border border-amber-200/90 bg-amber-50/90 p-6 text-sm font-medium text-amber-950 shadow-sm">
         Your account is not linked to a student record. Ask an administrator to link{' '}
-        <code className="bg-amber-100 px-1 rounded">linkedStudentId</code> for your user.
+        <code className="rounded-md bg-amber-100/90 px-1.5 py-0.5 font-mono text-xs">linkedStudentId</code> for your
+        user.
       </div>
     );
   }
 
   if (loading) {
-    return <div className="text-slate-500">Loading your portal…</div>;
+    return (
+      <div className="erp-card-pad flex min-h-[200px] items-center justify-center gap-3">
+        <span className="h-7 w-7 animate-spin rounded-full border-2 border-emerald-500/25 border-t-emerald-600" />
+        <p className="erp-muted">Loading your portal…</p>
+      </div>
+    );
   }
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      <h1 className="text-2xl font-bold text-slate-800">Student portal</h1>
+    <div className="mx-auto max-w-4xl space-y-6">
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="erp-h1 inline-flex items-center gap-2">
+            <GraduationCap className="h-7 w-7 text-emerald-600" strokeWidth={2} />
+            Student portal
+          </h1>
+          <p className="erp-muted mt-1.5">Read-only academic snapshot, enrollment, and privacy export.</p>
+        </div>
+      </div>
+
       {error && (
-        <div className="bg-red-50 text-red-800 px-4 py-2 rounded-lg text-sm border border-red-200">{error}</div>
+        <div className="rounded-xl border border-red-200/90 bg-red-50 px-4 py-3 text-sm font-medium text-red-900">
+          {error}
+        </div>
       )}
 
       {data?.student && (
-        <div className="bg-white rounded-xl shadow p-6">
-          <h2 className="text-lg font-semibold mb-2">{data.student.fullName}</h2>
-          <p className="text-slate-600 text-sm">
+        <div className="erp-card-pad relative overflow-hidden">
+          <div className="pointer-events-none absolute -right-16 -top-24 h-48 w-48 rounded-full bg-emerald-500/[0.07] blur-3xl" />
+          <h2 className="text-lg font-semibold text-zinc-900">{data.student.fullName}</h2>
+          <p className="erp-muted mt-1">
             {data.student.studentId} · {data.student.department} {data.student.program} · Semester{' '}
             {data.student.semester}
           </p>
         </div>
       )}
 
-      <div className="grid md:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl shadow p-6">
-          <h3 className="font-semibold text-slate-800 mb-3">Attendance</h3>
-          <p className="text-3xl font-bold text-blue-600">
+      <div className="grid gap-4 md:grid-cols-2">
+        <div className="erp-card-pad">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Attendance</h3>
+          <p className="mt-3 text-3xl font-semibold tracking-tight text-emerald-700 tabular-nums">
             {data?.attendance?.percentage != null ? `${data.attendance.percentage}%` : '—'}
           </p>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="erp-muted mt-2">
             {data?.attendance?.present ?? 0} present / {data?.attendance?.total ?? 0} sessions
           </p>
         </div>
-        <div className="bg-white rounded-xl shadow p-6">
-          <h3 className="font-semibold text-slate-800 mb-3">Fees</h3>
-          <p className="text-slate-600">
-            Balance:{' '}
-            <span className="font-bold text-amber-700">
-              Rs. {(data?.fees?.balance ?? 0).toLocaleString()}
-            </span>
+        <div className="erp-card-pad">
+          <h3 className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Fees</h3>
+          <p className="erp-muted mt-3">Outstanding balance</p>
+          <p className="text-3xl font-semibold tracking-tight text-amber-700 tabular-nums">
+            Rs. {(data?.fees?.balance ?? 0).toLocaleString()}
           </p>
-          <p className="text-sm text-slate-500 mt-1">
+          <p className="erp-muted mt-2">
             Paid Rs. {(data?.fees?.totalPaid ?? 0).toLocaleString()} of{' '}
             {(data?.fees?.totalDue ?? 0).toLocaleString()}
           </p>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow p-6">
-        <h3 className="font-semibold text-slate-800 mb-3">Transcript summary</h3>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="text-left p-3">Semester</th>
-                <th className="text-left p-3">GPA</th>
-                <th className="text-left p-3">CGPA</th>
-                <th className="text-left p-3">Courses</th>
-              </tr>
-            </thead>
-            <tbody>
-              {(data?.transcriptSummary || []).map((row) => (
-                <tr key={row.semester} className="border-t">
-                  <td className="p-3">{row.semester}</td>
-                  <td className="p-3">{row.GPA}</td>
-                  <td className="p-3">{row.CGPA}</td>
-                  <td className="p-3">{row.courses}</td>
+      <div className="erp-card-pad">
+        <h3 className="mb-4 text-base font-semibold text-zinc-900">Transcript summary</h3>
+        <div className="erp-table-shell !shadow-none">
+          <div className="overflow-x-auto">
+            <table className="erp-table">
+              <thead>
+                <tr>
+                  <th>Semester</th>
+                  <th>GPA</th>
+                  <th>CGPA</th>
+                  <th>Courses</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {(data?.transcriptSummary || []).map((row) => (
+                  <tr key={row.semester}>
+                    <td className="font-medium">{row.semester}</td>
+                    <td>{row.GPA}</td>
+                    <td>{row.CGPA}</td>
+                    <td>{row.courses}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
 
       {audit && (
-        <div className="bg-white rounded-xl shadow p-6">
-          <h3 className="font-semibold text-slate-800 mb-2">Degree audit</h3>
-          <p className="text-sm text-slate-600 mb-2">{audit.planTitle}</p>
-          <div className="flex items-center gap-4 mb-3">
-            <div className="text-2xl font-bold text-emerald-600">{audit.progressPercent ?? 0}%</div>
-            <span className="text-slate-500 text-sm">of required courses satisfied</span>
+        <div className="erp-card-pad border-emerald-500/15 bg-gradient-to-br from-white to-emerald-50/40">
+          <h3 className="text-base font-semibold text-zinc-900">Degree audit</h3>
+          <p className="erp-muted mt-1">{audit.planTitle}</p>
+          <div className="mt-4 flex flex-wrap items-end gap-4">
+            <div className="text-4xl font-semibold tracking-tight text-emerald-700 tabular-nums">
+              {audit.progressPercent ?? 0}%
+            </div>
+            <span className="erp-muted pb-1">of required courses satisfied</span>
           </div>
-          <p className="text-sm font-medium text-slate-700">Remaining</p>
-          <ul className="list-disc list-inside text-sm text-slate-600">
+          <p className="mt-6 text-xs font-semibold uppercase tracking-wider text-zinc-500">Remaining</p>
+          <ul className="mt-2 list-inside list-disc text-sm text-zinc-600">
             {(audit.remaining || []).length ? (
               audit.remaining.map((c) => <li key={c}>{c}</li>)
             ) : (
@@ -189,13 +210,13 @@ export default function PortalStudent() {
         </div>
       )}
 
-      <div className="bg-white rounded-xl shadow p-6">
-        <h3 className="font-semibold text-slate-800 mb-3">Course enrollment</h3>
-        <form onSubmit={submitEnroll} className="flex flex-wrap gap-3 items-end mb-4">
-          <div>
-            <label className="block text-xs text-slate-500 mb-1">Term</label>
+      <div className="erp-card-pad">
+        <h3 className="mb-4 text-base font-semibold text-zinc-900">Course enrollment</h3>
+        <form onSubmit={submitEnroll} className="mb-6 flex flex-wrap items-end gap-3">
+          <div className="min-w-[200px] flex-1">
+            <label className="erp-label">Term</label>
             <select
-              className="border rounded-lg px-3 py-2 min-w-[180px]"
+              className="erp-select"
               value={enrollForm.academicTermId}
               onChange={(e) => setEnrollForm((f) => ({ ...f, academicTermId: e.target.value }))}
               required
@@ -209,10 +230,10 @@ export default function PortalStudent() {
               ))}
             </select>
           </div>
-          <div>
-            <label className="block text-xs text-slate-500 mb-1">Course code</label>
+          <div className="min-w-[200px] flex-1">
+            <label className="erp-label">Course</label>
             <select
-              className="border rounded-lg px-3 py-2 min-w-[140px]"
+              className="erp-select"
               value={enrollForm.courseCode}
               onChange={(e) => setEnrollForm((f) => ({ ...f, courseCode: e.target.value }))}
               required
@@ -225,42 +246,59 @@ export default function PortalStudent() {
               ))}
             </select>
           </div>
-          <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          <button type="submit" className="erp-btn-accent">
             Enroll
           </button>
         </form>
-        <table className="w-full text-sm">
-          <thead className="bg-slate-50">
-            <tr>
-              <th className="text-left p-3">Course</th>
-              <th className="text-left p-3">Status</th>
-              <th className="text-left p-3"></th>
-            </tr>
-          </thead>
-          <tbody>
-            {enrollments.map((row) => (
-              <tr key={row._id} className="border-t">
-                <td className="p-3">{row.courseCode}</td>
-                <td className="p-3 capitalize">{row.status}</td>
-                <td className="p-3">
-                  {row.status === 'enrolled' && (
-                    <button type="button" onClick={() => dropEnrollment(row._id)} className="text-red-600 text-sm hover:underline">
-                      Drop
-                    </button>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        <div className="erp-table-shell !shadow-none">
+          <div className="overflow-x-auto">
+            <table className="erp-table">
+              <thead>
+                <tr>
+                  <th>Course</th>
+                  <th>Status</th>
+                  <th />
+                </tr>
+              </thead>
+              <tbody>
+                {enrollments.map((row) => (
+                  <tr key={row._id}>
+                    <td className="font-mono text-xs font-semibold">{row.courseCode}</td>
+                    <td>
+                      <span className={row.status === 'enrolled' ? 'erp-badge-ok' : 'erp-badge-warn'}>
+                        {row.status}
+                      </span>
+                    </td>
+                    <td className="text-right">
+                      {row.status === 'enrolled' && (
+                        <button type="button" onClick={() => dropEnrollment(row._id)} className="erp-link text-red-700 hover:text-red-600">
+                          Drop
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
 
-      <div className="bg-slate-100 rounded-xl p-6">
-        <h3 className="font-semibold text-slate-800 mb-2">Privacy</h3>
-        <p className="text-sm text-slate-600 mb-3">Download a JSON bundle of your profile data held in this ERP.</p>
-        <button type="button" onClick={exportGdpr} className="px-4 py-2 bg-slate-800 text-white rounded-lg hover:bg-slate-900">
-          Export my data (GDPR-style)
-        </button>
+      <div className="erp-card-pad border-zinc-900/10 bg-zinc-950 text-zinc-100">
+        <div className="flex items-start gap-3">
+          <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-white/10">
+            <Shield className="h-5 w-5 text-emerald-400" />
+          </div>
+          <div>
+            <h3 className="font-semibold text-white">Privacy</h3>
+            <p className="mt-1 text-sm leading-relaxed text-zinc-400">
+              Download a JSON bundle of profile data held in this ERP.
+            </p>
+            <button type="button" onClick={exportGdpr} className="erp-btn-secondary mt-4 border-white/10 bg-white/10 text-white hover:bg-white/15">
+              Export my data (GDPR-style)
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );

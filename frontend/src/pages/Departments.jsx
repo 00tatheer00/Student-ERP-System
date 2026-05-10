@@ -23,23 +23,29 @@ export default function Departments() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800">Departments</h1>
-      <p className="text-slate-600">
-        University of Computer Sciences - Six departments under the Faculty of Computer Science
-      </p>
+      <div>
+        <h1 className="erp-h1">Departments</h1>
+        <p className="erp-muted mt-1 max-w-2xl">
+          Six departments under the Faculty of Computer Science — University of Computer Sciences.
+        </p>
+      </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
         {loading ? (
-          <div className="col-span-full text-center text-slate-500">Loading...</div>
+          <div className="erp-card-pad col-span-full erp-empty">Loading…</div>
         ) : (
           departments.map((d) => (
             <div
               key={d._id}
-              className="bg-white rounded-xl shadow p-6 border border-slate-100 hover:shadow-lg transition"
+              className="erp-card group relative overflow-hidden p-6 transition-all duration-300 hover:border-emerald-200/80 hover:shadow-md"
             >
-              <div className="text-3xl font-bold text-blue-600 mb-2">{d.code}</div>
-              <h3 className="text-lg font-semibold text-slate-800">{d.name || names[d.code]}</h3>
-              <p className="text-slate-500 text-sm mt-1">{d.description || 'Computer Science Faculty'}</p>
+              <div className="pointer-events-none absolute -right-8 -top-10 h-28 w-28 rounded-full bg-emerald-500/[0.06] blur-2xl transition-opacity group-hover:opacity-100" />
+              <div className="flex items-baseline gap-2">
+                <span className="text-3xl font-bold tracking-tight text-emerald-700">{d.code}</span>
+                <span className="text-xs font-semibold uppercase tracking-wider text-zinc-400">Dept.</span>
+              </div>
+              <h3 className="mt-3 text-lg font-semibold text-zinc-900">{d.name || names[d.code]}</h3>
+              <p className="erp-muted mt-2">{d.description || 'Computer Science Faculty'}</p>
             </div>
           ))
         )}

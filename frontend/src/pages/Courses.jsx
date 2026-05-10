@@ -62,156 +62,163 @@ export default function Courses() {
 
   return (
     <div className="space-y-6">
-      <div className="flex justify-between items-center">
-        <h1 className="text-2xl font-bold text-slate-800">Courses</h1>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="erp-h1">Courses</h1>
+          <p className="erp-muted mt-1">Catalog by department and semester.</p>
+        </div>
         <button
+          type="button"
           onClick={() => {
             setEditing(null);
             setForm({ courseCode: '', courseName: '', department: 'CS', semester: 1, creditHours: 3 });
             setShowModal(true);
           }}
-          className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium"
+          className="erp-btn-accent"
         >
-          Add Course
+          Add course
         </button>
       </div>
 
-      <div className="bg-white rounded-xl shadow p-4 flex gap-4">
+      <div className="erp-toolbar gap-3">
         <select
           value={filter.department}
           onChange={(e) => setFilter({ ...filter, department: e.target.value })}
-          className="px-3 py-2 border rounded-lg"
+          className="erp-select w-auto min-w-[160px]"
         >
-          <option value="">All Departments</option>
+          <option value="">All departments</option>
           {DEPARTMENTS.map((d) => (
-            <option key={d} value={d}>{d}</option>
+            <option key={d} value={d}>
+              {d}
+            </option>
           ))}
         </select>
         <select
           value={filter.semester}
           onChange={(e) => setFilter({ ...filter, semester: e.target.value })}
-          className="px-3 py-2 border rounded-lg"
+          className="erp-select w-auto min-w-[160px]"
         >
-          <option value="">All Semesters</option>
+          <option value="">All semesters</option>
           {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
-            <option key={s} value={s}>Semester {s}</option>
+            <option key={s} value={s}>
+              Semester {s}
+            </option>
           ))}
         </select>
       </div>
 
-      <div className="bg-white rounded-xl shadow overflow-hidden">
+      <div className="erp-table-shell">
         {loading ? (
-          <div className="p-8 text-center text-slate-500">Loading...</div>
+          <div className="erp-empty">Loading…</div>
         ) : (
-          <table className="w-full">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="text-left p-4">Code</th>
-                <th className="text-left p-4">Name</th>
-                <th className="text-left p-4">Department</th>
-                <th className="text-left p-4">Semester</th>
-                <th className="text-left p-4">Credits</th>
-                <th className="text-left p-4">Actions</th>
-              </tr>
-            </thead>
-            <tbody>
-              {courses.map((c) => (
-                <tr key={c._id} className="border-t hover:bg-slate-50">
-                  <td className="p-4 font-mono">{c.courseCode}</td>
-                  <td className="p-4">{c.courseName}</td>
-                  <td className="p-4">{c.department}</td>
-                  <td className="p-4">{c.semester}</td>
-                  <td className="p-4">{c.creditHours}</td>
-                  <td className="p-4">
-                    <button
-                      onClick={() => handleEdit(c)}
-                      className="text-blue-600 hover:underline text-sm"
-                    >
-                      Edit
-                    </button>
-                  </td>
+          <div className="overflow-x-auto">
+            <table className="erp-table">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Name</th>
+                  <th>Department</th>
+                  <th>Semester</th>
+                  <th>Credits</th>
+                  <th className="text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {courses.map((c) => (
+                  <tr key={c._id}>
+                    <td className="font-mono text-xs font-semibold">{c.courseCode}</td>
+                    <td className="font-medium text-zinc-900">{c.courseName}</td>
+                    <td>{c.department}</td>
+                    <td>{c.semester}</td>
+                    <td>{c.creditHours}</td>
+                    <td className="text-right">
+                      <button type="button" onClick={() => handleEdit(c)} className="erp-link">
+                        Edit
+                      </button>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         )}
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-md w-full p-6">
-            <h2 className="text-xl font-bold mb-4">{editing ? 'Edit Course' : 'Add Course'}</h2>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium mb-1">Course Code</label>
-                <input
-                  type="text"
-                  value={form.courseCode}
-                  onChange={(e) => setForm({ ...form, courseCode: e.target.value.toUpperCase() })}
-                  className="w-full px-3 py-2 border rounded-lg"
-                  required
-                  disabled={!!editing}
-                />
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Course Name</label>
-                <input
-                  type="text"
-                  value={form.courseName}
-                  onChange={(e) => setForm({ ...form, courseName: e.target.value })}
-                  className="w-full px-3 py-2 border rounded-lg"
-                  required
-                />
-              </div>
-              <div className="grid grid-cols-2 gap-4">
+        <div className="erp-modal-backdrop">
+          <div className="erp-modal erp-modal-sm">
+            <div className="p-6 sm:p-8">
+              <h2 className="erp-h1 mb-6">{editing ? 'Edit course' : 'Add course'}</h2>
+              <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-1">Department</label>
-                  <select
-                    value={form.department}
-                    onChange={(e) => setForm({ ...form, department: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg"
-                  >
-                    {DEPARTMENTS.map((d) => (
-                      <option key={d} value={d}>{d}</option>
-                    ))}
-                  </select>
+                  <label className="erp-label">Course code</label>
+                  <input
+                    type="text"
+                    value={form.courseCode}
+                    onChange={(e) => setForm({ ...form, courseCode: e.target.value.toUpperCase() })}
+                    className="erp-input mt-1"
+                    required
+                    disabled={!!editing}
+                  />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Semester</label>
+                  <label className="erp-label">Course name</label>
+                  <input
+                    type="text"
+                    value={form.courseName}
+                    onChange={(e) => setForm({ ...form, courseName: e.target.value })}
+                    className="erp-input mt-1"
+                    required
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label className="erp-label">Department</label>
+                    <select
+                      value={form.department}
+                      onChange={(e) => setForm({ ...form, department: e.target.value })}
+                      className="erp-select mt-1"
+                    >
+                      {DEPARTMENTS.map((d) => (
+                        <option key={d} value={d}>
+                          {d}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                  <div>
+                    <label className="erp-label">Semester</label>
+                    <input
+                      type="number"
+                      min="1"
+                      max="8"
+                      value={form.semester}
+                      onChange={(e) => setForm({ ...form, semester: parseInt(e.target.value) })}
+                      className="erp-input mt-1"
+                    />
+                  </div>
+                </div>
+                <div>
+                  <label className="erp-label">Credit hours</label>
                   <input
                     type="number"
                     min="1"
-                    max="8"
-                    value={form.semester}
-                    onChange={(e) => setForm({ ...form, semester: parseInt(e.target.value) })}
-                    className="w-full px-3 py-2 border rounded-lg"
+                    max="6"
+                    value={form.creditHours}
+                    onChange={(e) => setForm({ ...form, creditHours: parseInt(e.target.value) })}
+                    className="erp-input mt-1"
                   />
                 </div>
-              </div>
-              <div>
-                <label className="block text-sm font-medium mb-1">Credit Hours</label>
-                <input
-                  type="number"
-                  min="1"
-                  max="6"
-                  value={form.creditHours}
-                  onChange={(e) => setForm({ ...form, creditHours: parseInt(e.target.value) })}
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
-              </div>
-              <div className="flex justify-end gap-2 pt-4">
-                <button
-                  type="button"
-                  onClick={() => setShowModal(false)}
-                  className="px-4 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg"
-                >
-                  Cancel
-                </button>
-                <button type="submit" className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg">
-                  {editing ? 'Update' : 'Create'}
-                </button>
-              </div>
-            </form>
+                <div className="flex justify-end gap-2 border-t border-zinc-100 pt-6">
+                  <button type="button" onClick={() => setShowModal(false)} className="erp-btn-secondary">
+                    Cancel
+                  </button>
+                  <button type="submit" className="erp-btn-accent">
+                    {editing ? 'Update' : 'Create'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         </div>
       )}

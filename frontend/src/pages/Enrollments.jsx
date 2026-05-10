@@ -62,24 +62,32 @@ export default function Enrollments() {
 
   if (!canStaff) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-slate-500">Enrollment management requires admin or reception access.</p>
+      <div className="erp-card-pad flex min-h-[240px] items-center justify-center">
+        <p className="erp-muted text-center">Enrollment management requires admin or reception access.</p>
       </div>
     );
   }
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800">Course enrollment</h1>
-      {error && <div className="bg-red-50 text-red-800 px-4 py-2 rounded-lg text-sm">{error}</div>}
+      <div>
+        <h1 className="erp-h1">Course enrollment</h1>
+        <p className="erp-muted mt-1">Register students within term windows and prerequisites.</p>
+      </div>
 
-      <div className="bg-white rounded-xl shadow p-6">
-        <h2 className="text-lg font-semibold mb-4">Register student</h2>
-        <form onSubmit={submit} className="grid md:grid-cols-2 lg:grid-cols-4 gap-4 items-end">
-          <div className="md:col-span-2">
-            <label className="block text-xs text-slate-500 mb-1">Student</label>
+      {error && (
+        <div className="rounded-xl border border-red-200/90 bg-red-50 px-4 py-3 text-sm font-medium text-red-900">
+          {error}
+        </div>
+      )}
+
+      <div className="erp-card-pad">
+        <h2 className="mb-4 text-base font-semibold text-zinc-900">Register student</h2>
+        <form onSubmit={submit} className="grid grid-cols-1 items-end gap-4 md:grid-cols-2 lg:grid-cols-12">
+          <div className="md:col-span-2 lg:col-span-5">
+            <label className="erp-label">Student</label>
             <select
-              className="w-full border rounded-lg px-3 py-2"
+              className="erp-select mt-1"
               value={form.studentId}
               onChange={(e) => setForm((f) => ({ ...f, studentId: e.target.value }))}
               required
@@ -92,20 +100,20 @@ export default function Enrollments() {
               ))}
             </select>
           </div>
-          <div>
-            <label className="block text-xs text-slate-500 mb-1">Course code</label>
+          <div className="lg:col-span-3">
+            <label className="erp-label">Course code</label>
             <input
-              className="w-full border rounded-lg px-3 py-2 uppercase"
+              className="erp-input mt-1 uppercase"
               value={form.courseCode}
               onChange={(e) => setForm((f) => ({ ...f, courseCode: e.target.value }))}
               placeholder="CS201"
               required
             />
           </div>
-          <div>
-            <label className="block text-xs text-slate-500 mb-1">Term</label>
+          <div className="lg:col-span-3">
+            <label className="erp-label">Term</label>
             <select
-              className="w-full border rounded-lg px-3 py-2"
+              className="erp-select mt-1"
               value={form.academicTermId}
               onChange={(e) => setForm((f) => ({ ...f, academicTermId: e.target.value }))}
               required
@@ -118,18 +126,18 @@ export default function Enrollments() {
               ))}
             </select>
           </div>
-          <div className="lg:col-span-4">
-            <button type="submit" className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700">
+          <div className="lg:col-span-1 flex lg:justify-end">
+            <button type="submit" className="erp-btn-accent w-full lg:w-auto">
               Enroll
             </button>
           </div>
         </form>
       </div>
 
-      <div className="bg-white rounded-xl shadow p-6">
-        <div className="flex flex-wrap gap-4 mb-4">
+      <div className="erp-card-pad">
+        <div className="mb-4 flex flex-wrap gap-3">
           <select
-            className="border rounded-lg px-3 py-2"
+            className="erp-select w-auto min-w-[160px]"
             value={filters.academicTermId}
             onChange={(e) => setFilters((f) => ({ ...f, academicTermId: e.target.value }))}
           >
@@ -141,7 +149,7 @@ export default function Enrollments() {
             ))}
           </select>
           <select
-            className="border rounded-lg px-3 py-2"
+            className="erp-select w-auto min-w-[140px]"
             value={filters.status}
             onChange={(e) => setFilters((f) => ({ ...f, status: e.target.value }))}
           >
@@ -150,37 +158,43 @@ export default function Enrollments() {
             <option value="dropped">Dropped</option>
           </select>
         </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-sm">
-            <thead className="bg-slate-50">
-              <tr>
-                <th className="text-left p-3">Student</th>
-                <th className="text-left p-3">Course</th>
-                <th className="text-left p-3">Term</th>
-                <th className="text-left p-3">Status</th>
-                <th className="text-left p-3"></th>
-              </tr>
-            </thead>
-            <tbody>
-              {rows.map((r) => (
-                <tr key={r._id} className="border-t">
-                  <td className="p-3">
-                    {r.studentId?.studentId ? `${r.studentId.studentId} — ${r.studentId.fullName}` : String(r.studentId)}
-                  </td>
-                  <td className="p-3">{r.courseCode}</td>
-                  <td className="p-3">{r.academicTermId?.label || '—'}</td>
-                  <td className="p-3 capitalize">{r.status}</td>
-                  <td className="p-3">
-                    {r.status === 'enrolled' && (
-                      <button type="button" onClick={() => drop(r._id)} className="text-red-600 hover:underline">
-                        Drop
-                      </button>
-                    )}
-                  </td>
+        <div className="erp-table-shell !shadow-none">
+          <div className="overflow-x-auto">
+            <table className="erp-table">
+              <thead>
+                <tr>
+                  <th>Student</th>
+                  <th>Course</th>
+                  <th>Term</th>
+                  <th>Status</th>
+                  <th className="text-right">Actions</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody>
+                {rows.map((r) => (
+                  <tr key={r._id}>
+                    <td className="max-w-[220px]">
+                      {r.studentId?.studentId
+                        ? `${r.studentId.studentId} — ${r.studentId.fullName}`
+                        : String(r.studentId)}
+                    </td>
+                    <td className="font-mono text-xs font-semibold">{r.courseCode}</td>
+                    <td>{r.academicTermId?.label || '—'}</td>
+                    <td>
+                      <span className={r.status === 'enrolled' ? 'erp-badge-ok' : 'erp-badge-warn'}>{r.status}</span>
+                    </td>
+                    <td className="text-right">
+                      {r.status === 'enrolled' && (
+                        <button type="button" onClick={() => drop(r._id)} className="erp-link text-red-700 hover:text-red-600">
+                          Drop
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </div>

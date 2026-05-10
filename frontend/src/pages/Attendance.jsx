@@ -2,6 +2,13 @@ import { useState, useEffect, useRef } from 'react';
 import api from '../utils/api';
 import { decodeAttendanceScan } from '../utils/attendanceScan';
 
+function statusBadge(status) {
+  if (status === 'present') return 'erp-badge-ok';
+  if (status === 'late') return 'erp-badge-warn';
+  if (status === 'excused') return 'erp-badge-warn';
+  return 'erp-badge-bad';
+}
+
 export default function Attendance() {
   const [students, setStudents] = useState([]);
   const [courses, setCourses] = useState([]);
@@ -121,22 +128,25 @@ export default function Attendance() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800">Attendance</h1>
+      <div>
+        <h1 className="erp-h1">Attendance</h1>
+        <p className="erp-muted mt-1">QR scanning, manual entry, and session history.</p>
+      </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-white rounded-xl shadow p-6">
-          <h2 className="text-lg font-semibold mb-4">Mark attendance</h2>
-          <p className="text-sm text-slate-600 mb-4">
-            Plug in a USB QR scanner (or pair a Bluetooth scanner). Click in the scanner field below — most devices act
-            like a keyboard and type the code, then press Enter. Use the same QR as on the back of the printed ID card.
+      <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
+        <div className="erp-card-pad">
+          <h2 className="text-base font-semibold text-zinc-900">Mark attendance</h2>
+          <p className="erp-muted mt-2 text-sm leading-relaxed">
+            Plug in a USB QR scanner (or pair a Bluetooth scanner). Focus the scanner field — devices typically emulate a
+            keyboard. Use the same QR as on the back of the printed ID card.
           </p>
-          <form onSubmit={handleScanFormSubmit} className="space-y-4">
+          <form onSubmit={handleScanFormSubmit} className="mt-6 space-y-4">
             <div>
-              <label className="block text-sm font-medium mb-1">Course</label>
+              <label className="erp-label">Course</label>
               <select
                 value={scanForm.courseCode}
                 onChange={(e) => setScanForm({ ...scanForm, courseCode: e.target.value })}
-                className="w-full px-3 py-2 border rounded-lg"
+                className="erp-select mt-1"
                 required
               >
                 <option value="">Select course</option>
@@ -149,7 +159,7 @@ export default function Attendance() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">QR scanner / paste scan</label>
+              <label className="erp-label">QR scanner / paste</label>
               <input
                 ref={scannerInputRef}
                 type="text"
@@ -159,23 +169,23 @@ export default function Attendance() {
                 value={scannerRaw}
                 onChange={onScannerInputChange}
                 onKeyDown={onScannerKeyDown}
-                className="w-full px-3 py-2 border-2 border-blue-200 rounded-lg font-mono text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                className="erp-input mt-1 border-emerald-200/80 font-mono text-sm shadow-inner focus:border-emerald-400 focus:ring-emerald-500/20"
               />
               {resolvedStudent ? (
-                <p className="mt-2 text-sm text-green-700 font-medium">
+                <p className="mt-2 text-sm font-semibold text-emerald-800">
                   Recognized: {resolvedStudent.studentId} — {resolvedStudent.fullName}
                 </p>
               ) : scannerRaw.trim() ? (
-                <p className="mt-2 text-sm text-amber-700">Could not parse scan — try again or use manual select.</p>
+                <p className="mt-2 text-sm font-medium text-amber-800">Could not parse scan — try again or use manual select.</p>
               ) : null}
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Or select student manually</label>
+              <label className="erp-label">Or select student manually</label>
               <select
                 value={scanForm.studentId && scanForm.method === 'manual' ? scanForm.studentId : ''}
                 onChange={(e) => onManualStudentChange(e.target.value)}
-                className="w-full px-3 py-2 border rounded-lg"
+                className="erp-select mt-1"
               >
                 <option value="">None (use scanner)</option>
                 {students.map((s) => (
@@ -187,11 +197,11 @@ export default function Attendance() {
             </div>
 
             <div>
-              <label className="block text-sm font-medium mb-1">Status</label>
+              <label className="erp-label">Status</label>
               <select
                 value={scanForm.status}
                 onChange={(e) => setScanForm({ ...scanForm, status: e.target.value })}
-                className="w-full px-3 py-2 border rounded-lg"
+                className="erp-select mt-1"
               >
                 <option value="present">Present</option>
                 <option value="absent">Absent</option>
@@ -202,22 +212,23 @@ export default function Attendance() {
             <button
               type="submit"
               disabled={!scanForm.studentId || !scanForm.courseCode}
-              className="w-full py-2 bg-blue-600 hover:bg-blue-700 disabled:bg-slate-300 text-white rounded-lg font-medium"
+              className="erp-btn-accent w-full disabled:pointer-events-none disabled:opacity-40"
             >
               Mark attendance
             </button>
           </form>
         </div>
 
-        <div className="bg-white rounded-xl shadow p-6">
-          <h2 className="text-lg font-semibold mb-2">Preview QR (same data as ID card back)</h2>
-          <p className="text-sm text-slate-600 mb-4">
+        <div className="erp-card-pad">
+          <h2 className="text-base font-semibold text-zinc-900">QR preview</h2>
+          <p className="erp-muted mt-2 text-sm">
             On-screen preview only; printed cards use the identical attendance payload.
           </p>
-          <div className="space-y-4">
+          <div className="mt-6 space-y-4">
             <select
               onChange={(e) => e.target.value && showQr(e.target.value)}
-              className="w-full px-3 py-2 border rounded-lg"
+              className="erp-select"
+              defaultValue=""
             >
               <option value="">Select student for QR preview</option>
               {students.map((s) => (
@@ -227,22 +238,22 @@ export default function Attendance() {
               ))}
             </select>
             {qrStudent && (
-              <div className="flex flex-col items-center p-4 bg-slate-50 rounded-lg">
-                <img src={qrStudent.qrCode} alt="Attendance QR" className="w-48 h-48" />
-                <p className="mt-2 font-mono text-sm">{qrStudent.studentId}</p>
+              <div className="flex flex-col items-center rounded-2xl border border-zinc-100 bg-zinc-50/90 p-6">
+                <img src={qrStudent.qrCode} alt="Attendance QR" className="h-48 w-48" />
+                <p className="mt-3 font-mono text-sm font-medium text-zinc-700">{qrStudent.studentId}</p>
               </div>
             )}
           </div>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow p-6">
-        <h2 className="text-lg font-semibold mb-4">Attendance records</h2>
-        <div className="flex gap-4 mb-4 flex-wrap">
+      <div className="erp-card-pad">
+        <h2 className="text-base font-semibold text-zinc-900">Attendance records</h2>
+        <div className="mt-4 flex flex-wrap gap-3">
           <select
             value={filters.studentId}
             onChange={(e) => setFilters({ ...filters, studentId: e.target.value })}
-            className="px-3 py-2 border rounded-lg"
+            className="erp-select w-auto min-w-[160px]"
           >
             <option value="">All students</option>
             {students.map((s) => (
@@ -254,7 +265,7 @@ export default function Attendance() {
           <select
             value={filters.courseCode}
             onChange={(e) => setFilters({ ...filters, courseCode: e.target.value })}
-            className="px-3 py-2 border rounded-lg"
+            className="erp-select w-auto min-w-[140px]"
           >
             <option value="">All courses</option>
             {courses.map((c) => (
@@ -267,49 +278,41 @@ export default function Attendance() {
             type="date"
             value={filters.date}
             onChange={(e) => setFilters({ ...filters, date: e.target.value })}
-            className="px-3 py-2 border rounded-lg"
+            className="erp-input w-auto"
           />
         </div>
         {loading ? (
-          <div className="text-slate-500">Loading...</div>
+          <p className="erp-muted mt-6">Loading…</p>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-50">
-                <tr>
-                  <th className="text-left p-4">Student</th>
-                  <th className="text-left p-4">Course</th>
-                  <th className="text-left p-4">Date</th>
-                  <th className="text-left p-4">Status</th>
-                  <th className="text-left p-4">Method</th>
-                </tr>
-              </thead>
-              <tbody>
-                {attendance.map((a) => (
-                  <tr key={a._id} className="border-t hover:bg-slate-50">
-                    <td className="p-4">
-                      {a.studentId?.studentId || a.studentId} — {a.studentId?.fullName || '-'}
-                    </td>
-                    <td className="p-4">{a.courseCode}</td>
-                    <td className="p-4">{new Date(a.date).toLocaleDateString()}</td>
-                    <td className="p-4">
-                      <span
-                        className={`px-2 py-1 rounded text-xs ${
-                          a.status === 'present'
-                            ? 'bg-green-100 text-green-800'
-                            : a.status === 'late'
-                              ? 'bg-amber-100 text-amber-800'
-                              : 'bg-red-100 text-red-800'
-                        }`}
-                      >
-                        {a.status}
-                      </span>
-                    </td>
-                    <td className="p-4">{a.method}</td>
+          <div className="erp-table-shell mt-6 !shadow-none">
+            <div className="overflow-x-auto">
+              <table className="erp-table">
+                <thead>
+                  <tr>
+                    <th>Student</th>
+                    <th>Course</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Method</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {attendance.map((a) => (
+                    <tr key={a._id}>
+                      <td className="font-medium">
+                        {a.studentId?.studentId || a.studentId} — {a.studentId?.fullName || '-'}
+                      </td>
+                      <td className="font-mono text-xs">{a.courseCode}</td>
+                      <td className="tabular-nums text-zinc-600">{new Date(a.date).toLocaleDateString()}</td>
+                      <td>
+                        <span className={statusBadge(a.status)}>{a.status}</span>
+                      </td>
+                      <td className="text-zinc-600">{a.method}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         )}
       </div>

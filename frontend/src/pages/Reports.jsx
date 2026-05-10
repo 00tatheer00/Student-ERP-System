@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { FileJson, Wallet, Users, Download } from 'lucide-react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -6,7 +7,6 @@ export default function Reports() {
   const { user } = useAuth();
   const [dashboard, setDashboard] = useState(null);
   const [activityLogs, setActivityLogs] = useState([]);
-
   const [compliancePreview, setCompliancePreview] = useState(null);
 
   useEffect(() => {
@@ -25,8 +25,8 @@ export default function Reports() {
 
   if (!canViewReports) {
     return (
-      <div className="flex items-center justify-center h-64">
-        <div className="text-slate-500">You don't have permission to view reports.</div>
+      <div className="erp-card-pad flex min-h-[240px] items-center justify-center">
+        <p className="erp-muted text-center">You don&apos;t have permission to view reports.</p>
       </div>
     );
   }
@@ -72,112 +72,103 @@ export default function Reports() {
 
   return (
     <div className="space-y-6">
-      <h1 className="text-2xl font-bold text-slate-800">Reports & Analytics</h1>
+      <div>
+        <h1 className="erp-h1">Reports & analytics</h1>
+        <p className="erp-muted mt-1">Compliance exports and institutional summaries.</p>
+      </div>
 
-      <div className="bg-white rounded-xl shadow p-6">
-        <h2 className="text-lg font-semibold mb-4">Compliance & exports</h2>
-        <p className="text-sm text-slate-600 mb-4">
+      <div className="erp-card-pad">
+        <h2 className="text-base font-semibold text-zinc-900">Compliance & exports</h2>
+        <p className="erp-muted mt-2 max-w-3xl">
           Term-wise attendance JSON, fee summaries, defaulters, and HEC-style student CSV (role-restricted on the API).
         </p>
-        <div className="flex flex-wrap gap-2 mb-4">
+        <div className="mt-5 flex flex-wrap gap-2">
           {canAttendanceInsight && (
-            <button
-              type="button"
-              onClick={fetchAttendancePreview}
-              className="px-4 py-2 bg-slate-800 text-white rounded-lg text-sm hover:bg-slate-900"
-            >
-              Attendance sheet (JSON preview)
+            <button type="button" onClick={fetchAttendancePreview} className="erp-btn-primary">
+              <FileJson className="h-4 w-4 opacity-90" />
+              Attendance (JSON)
             </button>
           )}
           {canFeeInsights && (
             <>
-              <button
-                type="button"
-                onClick={fetchFeeCollection}
-                className="px-4 py-2 bg-emerald-700 text-white rounded-lg text-sm hover:bg-emerald-800"
-              >
-                Fee collection summary
+              <button type="button" onClick={fetchFeeCollection} className="erp-btn-accent">
+                <Wallet className="h-4 w-4 opacity-90" />
+                Fee collection
               </button>
-              <button
-                type="button"
-                onClick={fetchDefaulters}
-                className="px-4 py-2 bg-amber-700 text-white rounded-lg text-sm hover:bg-amber-800"
-              >
-                Defaulters list
+              <button type="button" onClick={fetchDefaulters} className="erp-btn-secondary">
+                <Users className="h-4 w-4 text-zinc-500" />
+                Defaulters
               </button>
             </>
           )}
           {canHecExport && (
-            <button
-              type="button"
-              onClick={downloadHec}
-              className="px-4 py-2 bg-blue-700 text-white rounded-lg text-sm hover:bg-blue-800"
-            >
-              Download HEC-style CSV
+            <button type="button" onClick={downloadHec} className="erp-btn-secondary border-emerald-200 bg-emerald-50/80 text-emerald-900 hover:bg-emerald-50">
+              <Download className="h-4 w-4 text-emerald-700" />
+              HEC-style CSV
             </button>
           )}
         </div>
         {compliancePreview && (
-          <pre className="text-xs bg-slate-50 border rounded-lg p-4 max-h-72 overflow-auto overflow-x-auto">
+          <pre className="mt-5 max-h-72 overflow-auto rounded-xl border border-zinc-200 bg-zinc-50 p-4 text-xs leading-relaxed text-zinc-700">
             {JSON.stringify(compliancePreview.body, null, 2)}
           </pre>
         )}
       </div>
 
       {dashboard && (
-        <div className="bg-white rounded-xl shadow p-6">
-          <h2 className="text-lg font-semibold mb-4">Summary Report</h2>
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-            <div className="p-4 bg-slate-50 rounded-lg">
-              <p className="text-slate-500 text-sm">Total Students</p>
-              <p className="text-2xl font-bold">{dashboard.totalStudents}</p>
+        <div className="erp-card-pad">
+          <h2 className="mb-4 text-base font-semibold text-zinc-900">Summary</h2>
+          <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+            <div className="rounded-xl border border-zinc-100 bg-zinc-50/80 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Students</p>
+              <p className="mt-2 text-2xl font-semibold tabular-nums text-zinc-900">{dashboard.totalStudents}</p>
             </div>
-            <div className="p-4 bg-green-50 rounded-lg">
-              <p className="text-slate-500 text-sm">Fee Collected</p>
-              <p className="text-2xl font-bold text-green-600">
+            <div className="rounded-xl border border-emerald-100 bg-emerald-50/50 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-emerald-800/70">Fee collected</p>
+              <p className="mt-2 text-2xl font-semibold tabular-nums text-emerald-800">
                 Rs. {(dashboard.feeCollection?.total || 0).toLocaleString()}
               </p>
             </div>
-            <div className="p-4 bg-amber-50 rounded-lg">
-              <p className="text-slate-500 text-sm">Fee Pending</p>
-              <p className="text-2xl font-bold text-amber-600">
+            <div className="rounded-xl border border-amber-100 bg-amber-50/50 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-amber-900/70">Fee pending</p>
+              <p className="mt-2 text-2xl font-semibold tabular-nums text-amber-900">
                 Rs. {(dashboard.feeCollection?.pending || 0).toLocaleString()}
               </p>
             </div>
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <p className="text-slate-500 text-sm">Attendance %</p>
-              <p className="text-2xl font-bold text-blue-600">{dashboard.attendancePercentage || 0}%</p>
+            <div className="rounded-xl border border-cyan-100 bg-cyan-50/50 p-4">
+              <p className="text-xs font-semibold uppercase tracking-wider text-cyan-900/70">Attendance</p>
+              <p className="mt-2 text-2xl font-semibold tabular-nums text-cyan-900">{dashboard.attendancePercentage || 0}%</p>
             </div>
           </div>
         </div>
       )}
 
       {user?.role === 'admin' && (
-        <div className="bg-white rounded-xl shadow p-6">
-          <h2 className="text-lg font-semibold mb-4">Activity Logs</h2>
-          <div className="overflow-x-auto max-h-96 overflow-y-auto">
-            <table className="w-full">
-              <thead className="bg-slate-50 sticky top-0">
-                <tr>
-                  <th className="text-left p-4">Time</th>
-                  <th className="text-left p-4">User</th>
-                  <th className="text-left p-4">Action</th>
-                  <th className="text-left p-4">Module</th>
-                </tr>
-              </thead>
-              <tbody>
-                {activityLogs.map((log) => (
-                  <tr key={log._id} className="border-t hover:bg-slate-50">
-                    <td className="p-4 text-sm text-slate-600">
-                      {new Date(log.createdAt).toLocaleString()}
-                    </td>
-                    <td className="p-4">{log.userId?.fullName || '-'}</td>
-                    <td className="p-4">{log.action}</td>
-                    <td className="p-4">{log.module}</td>
+        <div className="erp-card-pad">
+          <h2 className="mb-4 text-base font-semibold text-zinc-900">Activity logs</h2>
+          <div className="erp-table-shell max-h-96 !shadow-none">
+            <div className="overflow-auto">
+              <table className="erp-table">
+                <thead className="sticky top-0 z-10 shadow-sm">
+                  <tr>
+                    <th>Time</th>
+                    <th>User</th>
+                    <th>Action</th>
+                    <th>Module</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody>
+                  {activityLogs.map((log) => (
+                    <tr key={log._id}>
+                      <td className="whitespace-nowrap text-xs text-zinc-500">{new Date(log.createdAt).toLocaleString()}</td>
+                      <td className="font-medium">{log.userId?.fullName || '-'}</td>
+                      <td>{log.action}</td>
+                      <td className="text-zinc-600">{log.module}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
       )}

@@ -133,16 +133,16 @@ export default function Students() {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-wrap justify-between items-center gap-4">
-        <h1 className="text-2xl font-bold text-slate-800">Students</h1>
-        <div className="flex gap-2">
-          <button
-            onClick={handleExport}
-            className="px-4 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg text-sm font-medium"
-          >
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div>
+          <h1 className="erp-h1">Students</h1>
+          <p className="erp-muted mt-1">Manage records, ID cards, and bulk CSV import/export.</p>
+        </div>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={handleExport} className="erp-btn-secondary">
             Export CSV
           </button>
-          <label className="px-4 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg text-sm font-medium cursor-pointer">
+          <label className="erp-btn-secondary cursor-pointer">
             Import CSV
             <input
               type="file"
@@ -167,30 +167,31 @@ export default function Students() {
             />
           </label>
           <button
+            type="button"
             onClick={() => {
               setEditing(null);
               resetForm();
               setShowModal(true);
             }}
-            className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg text-sm font-medium"
+            className="erp-btn-accent"
           >
             Add Student
           </button>
         </div>
       </div>
 
-      <div className="bg-white rounded-xl shadow p-4 flex flex-wrap gap-4">
+      <div className="erp-toolbar flex-wrap gap-3">
         <input
           type="text"
-          placeholder="Search..."
+          placeholder="Search…"
           value={filters.search}
           onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-          className="px-3 py-2 border rounded-lg w-48"
+          className="erp-input w-full min-w-[200px] max-w-xs sm:w-48"
         />
         <select
           value={filters.department}
           onChange={(e) => setFilters({ ...filters, department: e.target.value })}
-          className="px-3 py-2 border rounded-lg"
+          className="erp-select w-auto min-w-[140px]"
         >
           <option value="">All Departments</option>
           {DEPARTMENTS.map((d) => (
@@ -200,7 +201,7 @@ export default function Students() {
         <select
           value={filters.semester}
           onChange={(e) => setFilters({ ...filters, semester: e.target.value })}
-          className="px-3 py-2 border rounded-lg"
+          className="erp-select w-auto min-w-[140px]"
         >
           <option value="">All Semesters</option>
           {[1, 2, 3, 4, 5, 6, 7, 8].map((s) => (
@@ -210,7 +211,7 @@ export default function Students() {
         <select
           value={filters.program}
           onChange={(e) => setFilters({ ...filters, program: e.target.value })}
-          className="px-3 py-2 border rounded-lg"
+          className="erp-select w-auto min-w-[140px]"
         >
           <option value="">All Programs</option>
           {PROGRAMS.map((p) => (
@@ -219,55 +220,45 @@ export default function Students() {
         </select>
       </div>
 
-      <div className="bg-white rounded-xl shadow overflow-hidden">
+      <div className="erp-table-shell">
         {loading ? (
-          <div className="p-8 text-center text-slate-500">Loading...</div>
+          <div className="erp-empty">Loading…</div>
         ) : (
           <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-slate-50">
+            <table className="erp-table">
+              <thead>
                 <tr>
-                  <th className="text-left p-4">ID</th>
-                  <th className="text-left p-4">Name</th>
-                  <th className="text-left p-4">Department</th>
-                  <th className="text-left p-4">Program</th>
-                  <th className="text-left p-4">Sem</th>
-                  <th className="text-left p-4">Batch</th>
-                  <th className="text-left p-4">Status</th>
-                  <th className="text-left p-4">Actions</th>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Department</th>
+                  <th>Program</th>
+                  <th>Sem</th>
+                  <th>Batch</th>
+                  <th>Status</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {students.map((s) => (
-                  <tr key={s._id} className="border-t hover:bg-slate-50">
-                    <td className="p-4 font-mono text-sm">{s.studentId}</td>
-                    <td className="p-4">{s.fullName}</td>
-                    <td className="p-4">{s.department}</td>
-                    <td className="p-4">{s.program}</td>
-                    <td className="p-4">{s.semester}</td>
-                    <td className="p-4">{s.batch}</td>
-                    <td className="p-4">
-                      <span
-                        className={`px-2 py-1 rounded text-xs ${
-                          s.status === 'active' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                        }`}
-                      >
-                        {s.status}
-                      </span>
+                  <tr key={s._id}>
+                    <td className="font-mono text-xs font-medium text-zinc-600">{s.studentId}</td>
+                    <td className="font-medium text-zinc-900">{s.fullName}</td>
+                    <td>{s.department}</td>
+                    <td>{s.program}</td>
+                    <td>{s.semester}</td>
+                    <td>{s.batch}</td>
+                    <td>
+                      <span className={s.status === 'active' ? 'erp-badge-ok' : 'erp-badge-bad'}>{s.status}</span>
                     </td>
-                    <td className="p-4 flex gap-2">
-                      <button
-                        onClick={() => openIdCard(s._id)}
-                        className="text-blue-600 hover:underline text-sm"
-                      >
-                        ID Card
-                      </button>
-                      <button
-                        onClick={() => handleEdit(s)}
-                        className="text-slate-600 hover:underline text-sm"
-                      >
-                        Edit
-                      </button>
+                    <td>
+                      <div className="flex flex-wrap gap-3">
+                        <button type="button" onClick={() => openIdCard(s._id)} className="erp-link">
+                          ID Card
+                        </button>
+                        <button type="button" onClick={() => handleEdit(s)} className="erp-link text-zinc-600 hover:text-zinc-900">
+                          Edit
+                        </button>
+                      </div>
                     </td>
                   </tr>
                 ))}
@@ -278,82 +269,82 @@ export default function Students() {
       </div>
 
       {showModal && (
-        <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6">
-              <h2 className="text-xl font-bold mb-4">{editing ? 'Edit Student' : 'Add Student'}</h2>
+        <div className="erp-modal-backdrop">
+          <div className="erp-modal max-h-[90vh]">
+            <div className="p-6 sm:p-8">
+              <h2 className="erp-h1 mb-6">{editing ? 'Edit student' : 'Add student'}</h2>
               <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Full Name</label>
+                    <label className="erp-label">Full name</label>
                     <input
                       type="text"
                       value={form.fullName}
                       onChange={(e) => setForm({ ...form, fullName: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="erp-input"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Father Name</label>
+                    <label className="erp-label">Father name</label>
                     <input
                       type="text"
                       value={form.fatherName}
                       onChange={(e) => setForm({ ...form, fatherName: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="erp-input"
                       required
                     />
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium mb-1">CNIC</label>
+                    <label className="erp-label">CNIC</label>
                     <input
                       type="text"
                       value={form.CNIC}
                       onChange={(e) => setForm({ ...form, CNIC: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="erp-input"
                       required
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Phone</label>
+                    <label className="erp-label">Phone</label>
                     <input
                       type="text"
                       value={form.phone}
                       onChange={(e) => setForm({ ...form, phone: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="erp-input"
                       required
                     />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Email</label>
+                  <label className="erp-label">Email</label>
                   <input
                     type="email"
                     value={form.email}
                     onChange={(e) => setForm({ ...form, email: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg"
+                    className="erp-input"
                     required
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-medium mb-1">Address</label>
+                  <label className="erp-label">Address</label>
                   <input
                     type="text"
                     value={form.address}
                     onChange={(e) => setForm({ ...form, address: e.target.value })}
-                    className="w-full px-3 py-2 border rounded-lg"
+                    className="erp-input"
                     required
                   />
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Department</label>
+                    <label className="erp-label">Department</label>
                     <select
                       value={form.department}
                       onChange={(e) => setForm({ ...form, department: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="erp-select"
                     >
                       {DEPARTMENTS.map((d) => (
                         <option key={d} value={d}>{d}</option>
@@ -361,11 +352,11 @@ export default function Students() {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Program</label>
+                    <label className="erp-label">Program</label>
                     <select
                       value={form.program}
                       onChange={(e) => setForm({ ...form, program: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="erp-select"
                     >
                       {PROGRAMS.map((p) => (
                         <option key={p} value={p}>{p}</option>
@@ -373,55 +364,48 @@ export default function Students() {
                     </select>
                   </div>
                 </div>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
                   <div>
-                    <label className="block text-sm font-medium mb-1">Semester</label>
+                    <label className="erp-label">Semester</label>
                     <input
                       type="number"
                       min="1"
                       max="8"
                       value={form.semester}
                       onChange={(e) => setForm({ ...form, semester: parseInt(e.target.value) })}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="erp-input"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium mb-1">Batch</label>
+                    <label className="erp-label">Batch</label>
                     <input
                       type="number"
                       min="2020"
                       max="2030"
                       value={form.batch}
                       onChange={(e) => setForm({ ...form, batch: parseInt(e.target.value) })}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="erp-input"
                     />
                   </div>
                 </div>
                 {editing && (
                   <div>
-                    <label className="block text-sm font-medium mb-1">Status</label>
+                    <label className="erp-label">Status</label>
                     <select
                       value={form.status}
                       onChange={(e) => setForm({ ...form, status: e.target.value })}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="erp-select"
                     >
                       <option value="active">Active</option>
                       <option value="inactive">Inactive</option>
                     </select>
                   </div>
                 )}
-                <div className="flex justify-end gap-2 pt-4">
-                  <button
-                    type="button"
-                    onClick={() => setShowModal(false)}
-                    className="px-4 py-2 bg-slate-200 hover:bg-slate-300 rounded-lg"
-                  >
+                <div className="flex justify-end gap-2 border-t border-zinc-100 pt-6">
+                  <button type="button" onClick={() => setShowModal(false)} className="erp-btn-secondary">
                     Cancel
                   </button>
-                  <button
-                    type="submit"
-                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg"
-                  >
+                  <button type="submit" className="erp-btn-accent">
                     {editing ? 'Update' : 'Create'}
                   </button>
                 </div>

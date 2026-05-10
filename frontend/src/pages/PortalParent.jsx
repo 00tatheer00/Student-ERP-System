@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { HeartHandshake } from 'lucide-react';
 import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 
@@ -30,28 +31,43 @@ export default function PortalParent() {
 
   if (user?.role !== 'parent') {
     return (
-      <div className="flex items-center justify-center h-64">
-        <p className="text-slate-500">Parent portal is only available for parent accounts.</p>
+      <div className="erp-card-pad flex min-h-[240px] items-center justify-center">
+        <p className="erp-muted text-center">Parent portal is only available for parent accounts.</p>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 max-w-3xl">
-      <h1 className="text-2xl font-bold text-slate-800">Parent portal</h1>
-      {error && <div className="bg-red-50 text-red-800 px-4 py-2 rounded-lg text-sm">{error}</div>}
+    <div className="mx-auto max-w-3xl space-y-6">
+      <div>
+        <h1 className="erp-h1 inline-flex items-center gap-2">
+          <HeartHandshake className="h-7 w-7 text-emerald-600" strokeWidth={2} />
+          Parent portal
+        </h1>
+        <p className="erp-muted mt-1.5">Attendance and fee summary for linked students.</p>
+      </div>
+
+      {error && (
+        <div className="rounded-xl border border-red-200/90 bg-red-50 px-4 py-3 text-sm font-medium text-red-900">
+          {error}
+        </div>
+      )}
 
       {children.length === 0 ? (
-        <div className="bg-amber-50 border border-amber-200 rounded-xl p-6 text-amber-900 text-sm">
-          No linked students. An administrator must set <code className="bg-amber-100 px-1 rounded">parentOfStudentIds</code>{' '}
-          on your account.
+        <div className="rounded-2xl border border-amber-200/90 bg-amber-50/90 p-6 text-sm font-medium text-amber-950 shadow-sm">
+          No linked students. An administrator must set{' '}
+          <code className="rounded-md bg-amber-100/90 px-1.5 py-0.5 font-mono text-xs">parentOfStudentIds</code> on
+          your account.
         </div>
       ) : (
         <>
-          <div className="bg-white rounded-xl shadow p-6">
-            <label className="block text-sm font-medium text-slate-700 mb-2">Student</label>
+          <div className="erp-card-pad">
+            <label htmlFor="child-select" className="erp-label">
+              Student
+            </label>
             <select
-              className="border rounded-lg px-3 py-2 w-full max-w-md"
+              id="child-select"
+              className="erp-select mt-1 max-w-md"
               value={selectedId}
               onChange={(e) => setSelectedId(e.target.value)}
             >
@@ -64,27 +80,25 @@ export default function PortalParent() {
           </div>
 
           {summary && (
-            <div className="grid md:grid-cols-2 gap-6">
-              <div className="bg-white rounded-xl shadow p-6">
-                <h3 className="font-semibold text-slate-800 mb-2">{summary.fullName}</h3>
-                <p className="text-sm text-slate-500 mb-4">{summary.studentId}</p>
-                <h4 className="text-sm font-medium text-slate-600 mb-1">Attendance</h4>
-                <p className="text-3xl font-bold text-blue-600">
+            <div className="grid gap-4 md:grid-cols-2">
+              <div className="erp-card-pad">
+                <h3 className="text-lg font-semibold text-zinc-900">{summary.fullName}</h3>
+                <p className="erp-muted mt-1 font-mono text-xs">{summary.studentId}</p>
+                <p className="mt-6 text-xs font-semibold uppercase tracking-wider text-zinc-500">Attendance</p>
+                <p className="mt-2 text-3xl font-semibold tracking-tight text-emerald-700 tabular-nums">
                   {summary.attendance?.percentage != null ? `${summary.attendance.percentage}%` : '—'}
                 </p>
-                <p className="text-sm text-slate-500 mt-1">
+                <p className="erp-muted mt-2">
                   {summary.attendance?.present ?? 0} present / {summary.attendance?.total ?? 0} sessions
                 </p>
               </div>
-              <div className="bg-white rounded-xl shadow p-6">
-                <h4 className="text-sm font-medium text-slate-600 mb-1">Fees</h4>
-                <p className="text-slate-700">
-                  Balance:{' '}
-                  <span className="font-bold text-amber-700">
-                    Rs. {(summary.fees?.balance ?? 0).toLocaleString()}
-                  </span>
+              <div className="erp-card-pad">
+                <p className="text-xs font-semibold uppercase tracking-wider text-zinc-500">Fees</p>
+                <p className="erp-muted mt-4">Outstanding balance</p>
+                <p className="mt-1 text-3xl font-semibold tracking-tight text-amber-700 tabular-nums">
+                  Rs. {(summary.fees?.balance ?? 0).toLocaleString()}
                 </p>
-                <p className="text-sm text-slate-500 mt-2">
+                <p className="erp-muted mt-4">
                   Paid Rs. {(summary.fees?.totalPaid ?? 0).toLocaleString()} of{' '}
                   {(summary.fees?.totalDue ?? 0).toLocaleString()}
                 </p>

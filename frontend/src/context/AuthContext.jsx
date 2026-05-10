@@ -40,8 +40,11 @@ export function AuthProvider({ children }) {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-slate-900">
-        <div className="text-white text-xl">Loading...</div>
+      <div className="flex min-h-screen flex-col items-center justify-center gap-4 bg-zinc-950">
+        <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-gradient-to-br from-emerald-400 to-teal-600 shadow-lg shadow-emerald-900/40">
+          <span className="h-6 w-6 animate-spin rounded-full border-2 border-white/25 border-t-white" />
+        </div>
+        <p className="text-sm font-medium text-zinc-400">Loading workspace…</p>
       </div>
     );
   }
