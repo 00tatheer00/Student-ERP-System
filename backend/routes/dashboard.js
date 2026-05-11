@@ -12,6 +12,12 @@ router.use(protect);
 router.use(authorize('admin', 'hod'));
 
 router.get('/', async (req, res) => {
+  res.set({
+    'Cache-Control': 'private, no-store, no-cache, must-revalidate',
+    Pragma: 'no-cache',
+    Expires: '0',
+    Vary: 'Authorization',
+  });
   try {
     const students = await Student.find(activeStudentMatch({ status: 'active' }));
     const fees = await Fee.find();

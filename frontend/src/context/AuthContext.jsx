@@ -11,7 +11,11 @@ export function AuthProvider({ children }) {
     const token = localStorage.getItem('token');
     if (token) {
       api.defaults.headers.common['Authorization'] = `Bearer ${token}`;
-      api.get('/auth/me')
+      api
+        .get('/auth/me', {
+          params: { _t: Date.now() },
+          headers: { 'Cache-Control': 'no-cache', Pragma: 'no-cache' },
+        })
         .then((res) => setUser(res.data))
         .catch(() => {
           localStorage.removeItem('token');

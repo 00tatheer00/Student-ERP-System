@@ -112,6 +112,13 @@ router.post(
 
 // @route   GET /api/auth/me
 router.get('/me', protect, (req, res) => {
+  // Prevent browser/CDN from serving a stale user (304) after role fixes or deploys.
+  res.set({
+    'Cache-Control': 'private, no-store, no-cache, must-revalidate',
+    Pragma: 'no-cache',
+    Expires: '0',
+    Vary: 'Authorization',
+  });
   res.json(userPayload(req.user));
 });
 
