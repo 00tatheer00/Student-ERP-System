@@ -38,6 +38,10 @@ if (!fs.existsSync(uploadsDir)) fs.mkdirSync(uploadsDir, { recursive: true });
 const app = express();
 const PORT = process.env.PORT || 5000;
 const startedAt = Date.now();
+const allowedOrigins = (process.env.CORS_ORIGIN || 'http://localhost:5173')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
 
 if (process.env.SENTRY_DSN) {
   import('@sentry/node')
@@ -48,7 +52,17 @@ if (process.env.SENTRY_DSN) {
     .catch(() => console.warn('Sentry package not installed — npm i @sentry/node to enable'));
 }
 
-app.use(cors({ origin: 'http://localhost:5173', credentials: true }));
+app.use(
+  cors({
+    origin(origin, callback) {
+      // Allow non-browser and same-origin requests without Origin header.
+      if (!origin) return callback(null, true);
+      if (allowedOrigins.includes(origin)) return callback(null, true);
+      return callback(new Error('Not allowed by CORS'));
+    },
+    credentials: true,
+  })
+);
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(requestLogger);
