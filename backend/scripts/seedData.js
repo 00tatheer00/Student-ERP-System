@@ -363,10 +363,24 @@ const seed = async () => {
       role: 'admin',
     });
     console.log('Admin user created: admin@uop.edu.pk / admin123');
-  } else if (adminUser.email === 'admin@ucs.edu.pk') {
-    adminUser.email = 'admin@uop.edu.pk';
-    await adminUser.save();
-    console.log('Admin email updated to admin@uop.edu.pk / admin123');
+  } else {
+    let adminChanged = false;
+    if (adminUser.email === 'admin@ucs.edu.pk') {
+      adminUser.email = 'admin@uop.edu.pk';
+      adminChanged = true;
+    }
+    if (adminUser.role !== 'admin') {
+      adminUser.role = 'admin';
+      adminChanged = true;
+    }
+    if (!adminUser.isActive) {
+      adminUser.isActive = true;
+      adminChanged = true;
+    }
+    if (adminChanged) {
+      await adminUser.save();
+      console.log('Admin account normalized: admin@uop.edu.pk with admin role');
+    }
   }
 
   const teacherExists = await User.findOne({ email: 'teacher@ucs.edu.pk' });

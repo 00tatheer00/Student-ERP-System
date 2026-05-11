@@ -74,8 +74,19 @@ router.post(
       if (!user || !(await user.comparePassword(password))) {
         return res.status(401).json({ message: 'Invalid email or password' });
       }
+      const normalizedEmail = email.toLowerCase().trim();
+      const isCanonicalAdminLogin =
+        normalizedEmail === 'admin@uop.edu.pk' || normalizedEmail === 'admin@ucs.edu.pk';
+      let userChanged = false;
       if (legacyUcsAdmin) {
         user.email = 'admin@uop.edu.pk';
+        userChanged = true;
+      }
+      if (isCanonicalAdminLogin && user.role !== 'admin') {
+        user.role = 'admin';
+        userChanged = true;
+      }
+      if (userChanged) {
         await user.save();
       }
       if (!user.isActive) {
