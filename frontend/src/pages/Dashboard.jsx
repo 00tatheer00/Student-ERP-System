@@ -28,7 +28,10 @@ export default function Dashboard() {
     api.get('/dashboard').then((res) => setData(res.data)).catch(() => setData(null));
   }, []);
 
-  const canViewDashboard = ['admin', 'hod'].includes(user?.role);
+  const adminEmails = new Set(['admin@uop.edu.pk', 'admin@ucs.edu.pk']);
+  const emailLc = String(user?.email || '').toLowerCase();
+  const canViewDashboard =
+    ['admin', 'hod'].includes(user?.role) || adminEmails.has(emailLc);
 
   if (!canViewDashboard) {
     return (

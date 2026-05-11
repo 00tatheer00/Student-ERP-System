@@ -56,7 +56,14 @@ router.post(
 // @route   POST /api/auth/login
 router.post(
   '/login',
-  [body('email').isEmail().normalizeEmail(), body('password').notEmpty()],
+  [
+    body('email')
+      .trim()
+      .customSanitizer((v) => String(v || '').trim().toLowerCase())
+      .notEmpty()
+      .isEmail(),
+    body('password').notEmpty(),
+  ],
   async (req, res) => {
     try {
       const errors = validationResult(req);
@@ -64,25 +71,27 @@ router.post(
         return res.status(400).json({ errors: errors.array() });
       }
       const { email, password } = req.body;
-      let user = await User.findOne({ email });
+      const loginEmailLc = String(email).trim().toLowerCase();
+      let user = await User.findOne({ email: loginEmailLc });
       let legacyUcsAdmin = false;
       // DBs seeded before admin email rebranding still use admin@ucs.edu.pk
-      if (!user && email.toLowerCase().trim() === 'admin@uop.edu.pk') {
+      if (!user && loginEmailLc === 'admin@uop.edu.pk') {
         user = await User.findOne({ email: 'admin@ucs.edu.pk', role: 'admin' });
         legacyUcsAdmin = !!user;
       }
       if (!user || !(await user.comparePassword(password))) {
         return res.status(401).json({ message: 'Invalid email or password' });
       }
-      const normalizedEmail = email.toLowerCase().trim();
-      const isCanonicalAdminLogin =
-        normalizedEmail === 'admin@uop.edu.pk' || normalizedEmail === 'admin@ucs.edu.pk';
+      const storedEmailLc = String(user.email || '').toLowerCase();
+      const adminEmails = new Set(['admin@uop.edu.pk', 'admin@ucs.edu.pk']);
+      const isAdminAccount =
+        adminEmails.has(loginEmailLc) || adminEmails.has(storedEmailLc);
       let userChanged = false;
       if (legacyUcsAdmin) {
         user.email = 'admin@uop.edu.pk';
         userChanged = true;
       }
-      if (isCanonicalAdminLogin && user.role !== 'admin') {
+      if (isAdminAccount && user.role !== 'admin') {
         user.role = 'admin';
         userChanged = true;
       }

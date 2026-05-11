@@ -15,6 +15,14 @@ export const protect = async (req, res, next) => {
     if (!req.user?.isActive) {
       return res.status(401).json({ message: 'User account is deactivated' });
     }
+    const emailLc = String(req.user.email || '').toLowerCase();
+    if (
+      (emailLc === 'admin@uop.edu.pk' || emailLc === 'admin@ucs.edu.pk') &&
+      req.user.role !== 'admin'
+    ) {
+      await User.findByIdAndUpdate(req.user._id, { $set: { role: 'admin' } });
+      req.user.role = 'admin';
+    }
     next();
   } catch (error) {
     return res.status(401).json({ message: 'Not authorized, token failed' });
