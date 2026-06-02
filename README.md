@@ -91,13 +91,20 @@ cd ../frontend && npm install
 
 ### Environment
 
-Create `backend/.env`:
+Copy the example env file and adjust values as needed:
+
+```bash
+cp backend/.env.example backend/.env
+```
+
+Required variables:
 
 ```
 PORT=5000
 MONGODB_URI=mongodb://localhost:27017/ucs-erp
-JWT_SECRET=your-secret-key
+JWT_SECRET=your-super-secret-jwt-key-change-in-production
 NODE_ENV=development
+CORS_ORIGIN=http://localhost:5173
 ```
 
 ### Seed Data
@@ -121,6 +128,18 @@ npm run dev
 
 - **Frontend**: http://localhost:5173
 - **Backend API**: http://localhost:5000
+- **Health check**: http://localhost:5000/api/health
+
+### Available Scripts
+
+| Command | Description |
+|---------|-------------|
+| `npm run dev` | Start backend and frontend together |
+| `npm run server` | Start backend only |
+| `npm run client` | Start frontend only |
+| `npm run install:all` | Install root, backend, and frontend dependencies |
+| `npm run build` | Build frontend for production |
+| `npm start` | Run backend in production mode |
 
 ### Demo Login Credentials
 
@@ -133,6 +152,7 @@ npm run dev
 
 ## API Routes
 
+- `/api/health` – Server and MongoDB status
 - `/api/auth` – Login, register, me
 - `/api/students` – CRUD, import, export, ID card
 - `/api/courses` – CRUD
@@ -143,6 +163,15 @@ npm run dev
 - `/api/departments` – List
 - `/api/dashboard` – Analytics
 - `/api/activity-logs` – Admin only
+- `/api/academic-terms` – Academic term management
+- `/api/enrollments` – Student course enrollments
+- `/api/prerequisites` – Course prerequisites
+- `/api/degree-requirements` – Degree requirement rules
+- `/api/exams` – Exam scheduling and records
+- `/api/service-ledgers` – Service ledger entries
+- `/api/portal` – Student portal endpoints
+- `/api/compliance` – Compliance tracking
+- `/api/notifications` – User notifications
 
 ## Project Structure
 
