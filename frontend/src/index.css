@@ -153,4 +153,13 @@ body {
   .erp-empty {
     @apply py-14 text-center text-sm text-zinc-500;
   }
+
+  .erp-scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .erp-scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
 }

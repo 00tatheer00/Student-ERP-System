@@ -77,7 +77,7 @@ export default function Layout({ children }) {
           </div>
         </div>
 
-        <nav className="flex-1 space-y-1 overflow-y-auto px-3 py-4">
+        <nav className="erp-scrollbar-hide flex-1 space-y-1 overflow-y-auto px-3 py-4">
           {filteredNav.map((item) => {
             const Icon = item.Icon;
             return (
