@@ -1,197 +1,107 @@
-# University of Computer Sciences – Student ERP System
+# University of Computer Sciences — Student ERP System
 
-A full production-ready MERN stack web application for managing Computer Science faculty operations.
-
-## Tech Stack
-
-- **MongoDB** – Database
-- **Express.js** – Backend API
-- **React** – Frontend
-- **Node.js** – Runtime
-
-## Departments
-
-- Computer Science (CS)
-- Software Engineering (SE)
-- Artificial Intelligence (AI)
-- Cybersecurity (CY)
-- Data Science (DS)
-- Information Technology (IT)
-
-## Programs
-
-- **BS** – 4 Years (Semesters 1–8)
-- **MS** – 2 Years (Semesters 1–4)
+A MERN-stack student and academic operations platform for a university Computer Sciences faculty. The repository contains a React/Vite frontend and an Express/MongoDB backend.
 
 ## Features
 
-### Module 1 – Student Management
-- CRUD operations
-- CSV import/export
-- Search & filters (department, semester, program)
-- Profile photo upload
-- Student ID card PDF
+- **Student management:** Student records, search and filters, CSV import/export, profile photos, and student ID cards.
+- **Attendance:** Course-based attendance, QR codes, scan/mark flows, and attendance percentages.
+- **Courses and academic structure:** Departments, programs, semesters, course enrollment, prerequisites, and degree requirements.
+- **Results and examinations:** Marks, GPA calculation, transcripts, exam sessions, and seat assignments.
+- **Fees and fines:** Fee records, payment history, fines, and service ledgers.
+- **Dashboards and reporting:** Department and semester analytics, attendance trends, GPA distribution, and financial summaries.
+- **Role-based access:** Admin, Teacher, Reception, and HOD workflows.
+- **Operational controls:** Activity logs, compliance tracking, and notifications.
 
-### Module 2 – Attendance Management
-- QR code per student
-- Scan/mark attendance
-- Prevent double attendance same day
-- Course-based attendance
-- Attendance percentage
+## Technology
 
-### Module 3 – Course Management
-- CRUD courses
-- Department & semester filters
+| Layer | Stack |
+|---|---|
+| Frontend | React 19, Vite 7, React Router |
+| Backend | Node.js, Express 4 |
+| Database | MongoDB with Mongoose |
+| Authentication | JSON Web Tokens |
+| Supporting tools | Recharts, QRCode, PDFKit, Vitest |
 
-### Module 4 – Result Management
-- Assign courses per semester
-- Enter marks & auto-calculate GPA
-- Transcript PDF export
-
-### Module 5 – Fee Management
-- Semester, lab, library fees
-- Payment history
-- Payment recording
-
-### Module 6 – Fine System
-- Late submission, plagiarism, no ID card, discipline violation
-- Track payment status
-
-### Module 7 – Dashboard Analytics
-- Students per department (pie chart)
-- Semester strength (bar chart)
-- Attendance trend (line chart)
-- GPA distribution
-- Fee collection & fines summary
-
-### Module 8 – Roles & Users
-- **Admin** – Full system access
-- **Teacher** – Attendance + Results
-- **Reception** – Students + Fees
-- **HOD** – Analytics + Reports
-
-## Quick Start
-
-### Prerequisites
+## Requirements
 
 - Node.js 18+
-- MongoDB (local or Atlas)
+- npm
+- MongoDB (local instance or MongoDB Atlas)
 
-### Installation
+## Local setup
+
+Install the root, backend, and frontend dependencies:
 
 ```bash
-# Install all dependencies (root + backend + frontend)
+git clone https://github.com/00tatheer00/Student-ERP-System.git
+cd Student-ERP-System
 npm run install:all
-
-# Or manually:
-npm install
-cd backend && npm install
-cd ../frontend && npm install
 ```
 
-### Environment
-
-Copy the example env file and adjust values as needed:
+Create the backend environment file from the example:
 
 ```bash
 cp backend/.env.example backend/.env
 ```
 
-Required variables:
+Configure the values in `backend/.env`:
 
-```
+```env
 PORT=5000
 MONGODB_URI=mongodb://localhost:27017/ucs-erp
-JWT_SECRET=your-super-secret-jwt-key-change-in-production
+JWT_SECRET=replace-with-a-long-random-secret
 NODE_ENV=development
 CORS_ORIGIN=http://localhost:5173
 ```
 
-### Seed Data
+Start the frontend and backend together:
 
 ```bash
-cd backend
-npm run seed
-```
-
-This creates:
-- Departments & sample courses
-- Demo users (see below)
-- Sample student
-
-### Run
-
-```bash
-# Run both backend and frontend
 npm run dev
 ```
 
-- **Frontend**: http://localhost:5173
-- **Backend API**: http://localhost:5000
-- **Health check**: http://localhost:5000/api/health
+- Frontend: [http://localhost:5173](http://localhost:5173)
+- Backend: [http://localhost:5000](http://localhost:5000)
+- Health check: [http://localhost:5000/api/health](http://localhost:5000/api/health)
 
-### Available Scripts
+## Useful scripts
 
-| Command | Description |
-|---------|-------------|
-| `npm run dev` | Start backend and frontend together |
-| `npm run server` | Start backend only |
-| `npm run client` | Start frontend only |
-| `npm run install:all` | Install root, backend, and frontend dependencies |
-| `npm run build` | Build frontend for production |
-| `npm start` | Run backend in production mode |
+| Command | Purpose |
+|---|---|
+| `npm run dev` | Run backend and frontend concurrently |
+| `npm run server` | Run the backend in development mode |
+| `npm run client` | Run the Vite frontend |
+| `npm run install:all` | Install dependencies for all workspaces |
+| `npm run build` | Build the frontend |
+| `npm start` | Start the backend |
+| `cd backend && npm test` | Run backend tests |
 
-### Demo Login Credentials
+## Project structure
 
-| Role      | Email               | Password    |
-|-----------|---------------------|-------------|
-| Admin     | admin@uop.edu.pk    | admin123    |
-| Teacher   | teacher@ucs.edu.pk  | teacher123  |
-| Reception | reception@ucs.edu.pk| reception123|
-| HOD       | hod@ucs.edu.pk      | hod123      |
-
-## API Routes
-
-- `/api/health` – Server and MongoDB status
-- `/api/auth` – Login, register, me
-- `/api/students` – CRUD, import, export, ID card
-- `/api/courses` – CRUD
-- `/api/attendance` – Mark, QR, percentage
-- `/api/results` – CRUD, transcript PDF
-- `/api/fees` – CRUD, payments
-- `/api/fines` – CRUD, mark paid
-- `/api/departments` – List
-- `/api/dashboard` – Analytics
-- `/api/activity-logs` – Admin only
-- `/api/academic-terms` – Academic term management
-- `/api/enrollments` – Student course enrollments
-- `/api/prerequisites` – Course prerequisites
-- `/api/degree-requirements` – Degree requirement rules
-- `/api/exams` – Exam scheduling and records
-- `/api/service-ledgers` – Service ledger entries
-- `/api/portal` – Student portal endpoints
-- `/api/compliance` – Compliance tracking
-- `/api/notifications` – User notifications
-
-## Project Structure
-
-```
+```text
+.
 ├── backend/
-│   ├── models/       # Mongoose schemas
-│   ├── routes/       # API routes
-│   ├── middleware/   # Auth, activity log
-│   ├── scripts/      # Seed data
-│   └── uploads/      # File uploads
+│   ├── config/          # Database configuration
+│   ├── middleware/      # Authentication and activity logging
+│   ├── models/          # Mongoose models
+│   ├── routes/          # REST API routes
+│   └── scripts/         # Development seed data
 ├── frontend/
-│   ├── src/
-│   │   ├── components/
-│   │   ├── context/
-│   │   ├── pages/
-│   │   └── utils/
-│   └── ...
+│   └── src/
+│       ├── components/
+│       ├── context/
+│       ├── pages/
+│       └── utils/
 └── package.json
 ```
 
+## Security and demo data
+
+The development seed script and login interface contain demo-account details for local evaluation. Treat those accounts as development-only: replace demo credentials, use a unique strong JWT secret, and configure a private database before any public deployment. Do not reuse demo passwords in production.
+
+Environment files and dependency folders must not be committed. The repository currently contains previously tracked generated dependencies; adding ignore rules does not remove files already tracked by Git. Remove tracked dependency folders from the Git index in a separate cleanup commit after confirming the local project still installs correctly.
+
 ## License
 
-MIT
+See the repository's [LICENSE](./LICENSE) file if present.
