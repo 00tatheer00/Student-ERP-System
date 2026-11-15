@@ -105,3 +105,11 @@ Environment files and dependency folders must not be committed. The repository c
 ## License
 
 See the repository's [LICENSE](./LICENSE) file if present.
+
+---
+
+## Repository standards
+
+- [Contribution guidelines](./CONTRIBUTING.md)
+- [Security policy](./SECURITY.md)
+- [Pull request template](./.github/PULL_REQUEST_TEMPLATE.md)
